@@ -10,6 +10,13 @@ Popup {
     required property var currentNode
     required property bool above
 
+    OpenImageDialog {
+        id: openImageDialog
+        note: root.note
+        node: root.currentNode
+        above: root.above
+    }
+
     signal anyButtonClicked()
 
     closePolicy: Popup.CloseOnPressOutside | Popup.CloseOnEscape
@@ -46,6 +53,8 @@ Popup {
             text: "IMAGE"
             height: 26
             onClicked: {
+                openImageDialog.open()
+
                 root.anyButtonClicked()
                 root.close()
             }

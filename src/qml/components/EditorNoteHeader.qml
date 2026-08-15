@@ -20,6 +20,13 @@ Rectangle {
         anchors.topMargin: 12
         anchors.bottomMargin: 12
 
+        OpenImageDialog {
+            id: openImageDialog
+            note: root.note
+            node: null
+            above: false
+        }
+
         Text {
             font.pixelSize: 11
             font.weight: Font.Bold
@@ -40,6 +47,9 @@ Rectangle {
         ToolbarButton {
             icon.source: "qrc:/assets/image/image.svg"
             text: qsTr("Image", "Append image button")
+            onClicked: {
+                openImageDialog.open()
+            }
         }
 
         ToolbarButton {

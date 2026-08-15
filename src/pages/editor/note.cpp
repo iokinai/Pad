@@ -1,3 +1,4 @@
+#include <pages/editor/imagenode.hpp>
 #include <pages/editor/note.hpp>
 #include <pages/editor/textnode.hpp>
 
@@ -53,8 +54,8 @@ void Note::onNodeRemoveRequested() {
 
 void Note::onNoteEdited() {}
 
-void Note::insertText(Node *node, const QString &text, bool above) {
-  auto index = _nodes.indexOf(node);
+void Note::insertAnyNode(Node *basic, Node *insert, bool above) {
+  auto index = _nodes.indexOf(basic);
 
   if (index == -1)
     index = _nodes.size();
@@ -63,13 +64,19 @@ void Note::insertText(Node *node, const QString &text, bool above) {
 
   beginInsertRows({}, index, index);
 
-  auto ins = new TextNode(text, this);
+  connectNode(insert);
 
-  connectNode(ins);
-
-  _nodes.insert(index, ins);
+  _nodes.insert(index, insert);
 
   endInsertRows();
+}
+
+void Note::insertText(Node *node, const QString &text, bool above) {
+  insertAnyNode(node, new TextNode(text, this), above);
+}
+
+void Note::insertImage(Node *node, const QString &path, bool above) {
+  insertAnyNode(node, new ImageNode(path, this), above);
 }
 
 void Note::insertTextAbove(Node *top, const QString &text) {
@@ -78,6 +85,14 @@ void Note::insertTextAbove(Node *top, const QString &text) {
 
 void Note::insertTextBelow(Node *bottom, const QString &text) {
   insertText(bottom, text, false);
+}
+
+void Note::insertImageAbove(Node *top, const QString &path) {
+  insertImage(top, path, true);
+}
+
+void Note::insertImageBelow(Node *bottom, const QString &path) {
+  insertImage(bottom, path, false);
 }
 
 QString Note::title() const { return _title; }

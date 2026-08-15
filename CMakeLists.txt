@@ -10,6 +10,8 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick)
 
+qt_standard_project_setup(REQUIRES 6.10)
+
 qt_add_executable(${PROJECT}
   src/main.cpp
   src/superapp.hpp
@@ -30,6 +32,8 @@ qt_add_executable(${PROJECT}
   src/pages/editor/textnode.cpp
   src/pages/editor/editorcontroller.hpp
   src/pages/editor/editorcontroller.cpp
+  src/pages/editor/imagenode.hpp
+  src/pages/editor/imagenode.cpp
   assets.qrc
 )
 
@@ -49,6 +53,8 @@ qt_add_qml_module(${PROJECT}
     src/qml/components/EditorInsertTrigger.qml
     src/qml/components/EditorInsert.qml
     src/qml/components/NodeRemoveButton.qml
+    src/qml/components/EditorImageNode.qml
+    src/qml/components/OpenImageDialog.qml
 )
 
 target_link_libraries(${PROJECT} PRIVATE
