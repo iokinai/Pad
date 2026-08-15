@@ -64,6 +64,11 @@ Popup {
             text: "CODE"
             height: 26
             onClicked: {
+                if (root.above)
+                    root.note.insertCodeAbove(root.currentNode)
+                else
+                    root.note.insertCodeBelow(root.currentNode)
+
                 root.anyButtonClicked()
                 root.close()
             }

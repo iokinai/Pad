@@ -22,6 +22,10 @@ QString LightTheme::placeholder() const { return QStringLiteral("#c8c5c0"); }
 QString LightTheme::regularFontFamily() const {
   return QStringLiteral("DM Sans");
 }
+QString LightTheme::monospaceFontFamily() const {
+  return QStringLiteral("JetBrains Mono");
+}
+
 QString LightTheme::remove() const { return QStringLiteral("#1fc83c3c"); }
 QString LightTheme::removeBorder() const { return QStringLiteral("66c83c3c"); }
 QString LightTheme::removeText() const { return QStringLiteral("#e05555"); }

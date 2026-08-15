@@ -34,6 +34,8 @@ qt_add_executable(${PROJECT}
   src/pages/editor/editorcontroller.cpp
   src/pages/editor/imagenode.hpp
   src/pages/editor/imagenode.cpp
+  src/pages/editor/codenode.hpp
+  src/pages/editor/codenode.cpp
   assets.qrc
 )
 
@@ -44,7 +46,7 @@ qt_add_qml_module(${PROJECT}
     src/qml/MainWindow.qml
     src/qml/pages/Editor.qml
     src/qml/components/ToolbarButton.qml
-    src/qml/components/EditorNoteHeader.qml
+    src/qml/components/EditorHeader.qml
     src/qml/components/EditorNoteTitle.qml
     src/qml/components/EditorTextNode.qml
     src/qml/components/Carette.qml
@@ -55,6 +57,7 @@ qt_add_qml_module(${PROJECT}
     src/qml/components/NodeRemoveButton.qml
     src/qml/components/EditorImageNode.qml
     src/qml/components/OpenImageDialog.qml
+    src/qml/components/EditorCodeNode.qml
 )
 
 target_link_libraries(${PROJECT} PRIVATE

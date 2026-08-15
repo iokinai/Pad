@@ -24,6 +24,7 @@ class Theme : public QObject {
   Q_PROPERTY(QString insertBar READ insertBar CONSTANT)
   Q_PROPERTY(QString placeholder READ placeholder CONSTANT)
   Q_PROPERTY(QString regularFontFamily READ regularFontFamily CONSTANT)
+  Q_PROPERTY(QString monospaceFontFamily READ monospaceFontFamily CONSTANT)
   Q_PROPERTY(QString remove READ remove CONSTANT)
   Q_PROPERTY(QString removeBorder READ removeBorder CONSTANT)
   Q_PROPERTY(QString removeText READ removeText CONSTANT)
@@ -51,6 +52,7 @@ public:
   virtual QString remove() const = 0;
   virtual QString removeBorder() const = 0;
   virtual QString removeText() const = 0;
+  virtual QString monospaceFontFamily() const = 0;
 };
 
 } // namespace pad

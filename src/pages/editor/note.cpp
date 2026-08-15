@@ -1,3 +1,4 @@
+#include <pages/editor/codenode.hpp>
 #include <pages/editor/imagenode.hpp>
 #include <pages/editor/note.hpp>
 #include <pages/editor/textnode.hpp>
@@ -79,6 +80,10 @@ void Note::insertImage(Node *node, const QString &path, bool above) {
   insertAnyNode(node, new ImageNode(path, this), above);
 }
 
+void Note::insertCode(Node *node, const QString &code, bool above) {
+  insertAnyNode(node, new CodeNode(code, this), above);
+}
+
 void Note::insertTextAbove(Node *top, const QString &text) {
   insertText(top, text, true);
 }
@@ -93,6 +98,14 @@ void Note::insertImageAbove(Node *top, const QString &path) {
 
 void Note::insertImageBelow(Node *bottom, const QString &path) {
   insertImage(bottom, path, false);
+}
+
+void Note::insertCodeAbove(Node *top, const QString &code) {
+  insertCode(top, code, true);
+}
+
+void Note::insertCodeBelow(Node *bottom, const QString &code) {
+  insertCode(bottom, code, false);
 }
 
 QString Note::title() const { return _title; }

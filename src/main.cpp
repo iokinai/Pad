@@ -9,6 +9,8 @@
 
 void loadFonts() {
   QFontDatabase::addApplicationFont(":/assets/fonts/DMSans.ttf");
+  QFontDatabase::addApplicationFont(":/assets/fonts/JetBrainsMono.ttf");
+  QFontDatabase::addApplicationFont(":/assets/fonts/JetBrainsMono-Medium.ttf");
 }
 
 int main(int argc, char *argv[]) {

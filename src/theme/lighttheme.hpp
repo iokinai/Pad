@@ -29,6 +29,7 @@ public:
   QString remove() const override;
   QString removeBorder() const override;
   QString removeText() const override;
+  QString monospaceFontFamily() const override;
 };
 
 } // namespace pad
