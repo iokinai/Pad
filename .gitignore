@@ -1,0 +1,8 @@
+vcpkg_installed/
+.cache/
+.vs/
+.vscode/
+.idea/
+.zed/
+build/
+CMakePresets.json

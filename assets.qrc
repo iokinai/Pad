@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/assets">
+        <file alias="image/text.svg">assets/img/text.svg</file>
+        <file alias="image/image.svg">assets/img/image.svg</file>
+        <file alias="image/code.svg">assets/img/code.svg</file>
+        <file alias="fonts/DMSans.ttf">assets/fonts/DMSans.ttf</file>
+    </qresource>
+</RCC>
