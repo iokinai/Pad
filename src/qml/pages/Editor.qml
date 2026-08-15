@@ -58,6 +58,8 @@ ColumnLayout {
                         switch (node.type) {
                         case Node.Text:
                             return textComponent
+                        case Node.Image:
+                            return imageComponent
                         default:
                             return null
                         }
@@ -83,6 +85,25 @@ ColumnLayout {
                     currentNode: baseNode.nodeValue
 
                     EditorTextNode {
+                        node: baseNode.nodeValue
+                        width: parent.width
+                    }
+                }
+            }
+
+            Component {
+                id: imageComponent
+
+                EditorBaseNode {
+                    id: baseNode
+                    width: parent.width
+                    property var noteValue
+                    property var nodeValue
+
+                    note: baseNode.noteValue
+                    currentNode: baseNode.nodeValue
+
+                    EditorImageNode {
                         node: baseNode.nodeValue
                         width: parent.width
                     }
