@@ -55,6 +55,9 @@ Rectangle {
         ToolbarButton {
             icon.source: "qrc:/assets/image/code.svg"
             text: qsTr("Code", "Append code button")
+            onClicked: {
+                note.insertCodeBelow(null)
+            }
         }
 
         Item {

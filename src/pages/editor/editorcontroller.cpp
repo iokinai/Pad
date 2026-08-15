@@ -1,3 +1,4 @@
+#include <pages/editor/codenode.hpp>
 #include <pages/editor/editorcontroller.hpp>
 #include <pages/editor/imagenode.hpp>
 #include <pages/editor/node.hpp>
@@ -13,6 +14,9 @@ static QVector<Node *> getTestNodes() {
   nodes.push_back(new TextNode("456"));
   nodes.push_back(new ImageNode(
       "file:///C:\\Users\\MegaD\\Downloads\\Новий проєкт (1).png"));
+  nodes.push_back(
+      new CodeNode("#include <iostream>\n\nint main() {\n\tstd::cout << "
+                   "\"Hello World\" << std::endl;\n}"));
 
   return nodes;
 }

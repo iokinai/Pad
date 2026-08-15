@@ -21,6 +21,7 @@ class Note : public QAbstractListModel {
   void insertAnyNode(Node *basic, Node *insert, bool above = true);
   void insertText(Node *node, const QString &text, bool above = true);
   void insertImage(Node *node, const QString &path, bool above = true);
+  void insertCode(Node *node, const QString &code, bool above = true);
 
   Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
   Q_PROPERTY(QDateTime createdAt MEMBER _createdAt CONSTANT)
@@ -38,6 +39,8 @@ public:
   Q_INVOKABLE void insertTextBelow(Node *bottom, const QString &text = "");
   Q_INVOKABLE void insertImageAbove(Node *top, const QString &path);
   Q_INVOKABLE void insertImageBelow(Node *bottom, const QString &path);
+  Q_INVOKABLE void insertCodeAbove(Node *top, const QString &code = "");
+  Q_INVOKABLE void insertCodeBelow(Node *bottom, const QString &code = "");
 
   QString title() const;
   void setTitle(const QString &title);

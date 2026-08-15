@@ -10,7 +10,7 @@ ColumnLayout {
 
     property var note: root.editor.note
 
-    EditorNoteHeader {
+    EditorHeader {
         Layout.preferredWidth: parent.width
         Layout.preferredHeight: 57
         createdAt: new Date()
@@ -60,6 +60,8 @@ ColumnLayout {
                             return textComponent
                         case Node.Image:
                             return imageComponent
+                        case Node.Code:
+                            return codeComponent
                         default:
                             return null
                         }
@@ -104,6 +106,25 @@ ColumnLayout {
                     currentNode: baseNode.nodeValue
 
                     EditorImageNode {
+                        node: baseNode.nodeValue
+                        width: parent.width
+                    }
+                }
+            }
+
+            Component {
+                id: codeComponent
+
+                EditorBaseNode {
+                    id: baseNode
+                    width: parent.width
+                    property var noteValue
+                    property var nodeValue
+
+                    note: baseNode.noteValue
+                    currentNode: baseNode.nodeValue
+
+                    EditorCodeNode {
                         node: baseNode.nodeValue
                         width: parent.width
                     }
