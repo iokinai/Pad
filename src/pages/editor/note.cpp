@@ -51,6 +51,8 @@ void Note::onNodeRemoveRequested() {
   endRemoveRows();
 
   node->deleteLater();
+
+  emit nodesCountChanged();
 }
 
 void Note::onNoteEdited() {}
@@ -70,6 +72,8 @@ void Note::insertAnyNode(Node *basic, Node *insert, bool above) {
   _nodes.insert(index, insert);
 
   endInsertRows();
+
+  emit nodesCountChanged();
 }
 
 void Note::insertText(Node *node, const QString &text, bool above) {
@@ -118,5 +122,7 @@ void Note::setTitle(const QString &title) {
   emit titleChanged();
   emit onNoteEdited();
 }
+
+int Note::nodesCount() const { return _nodes.count(); }
 
 } // namespace pad

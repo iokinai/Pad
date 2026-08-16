@@ -7,24 +7,14 @@
 
 namespace pad {
 
-static QVector<Node *> getTestNodes() {
-  QVector<Node *> nodes;
+EditorController::EditorController(Note *currentNote, QObject *parent)
+    : QObject(parent), _currentNote(currentNote) {}
 
-  nodes.push_back(new TextNode("123"));
-  nodes.push_back(new TextNode("456"));
-  nodes.push_back(new ImageNode(
-      "file:///C:\\Users\\MegaD\\Downloads\\Новий проєкт (1).png"));
-  nodes.push_back(
-      new CodeNode("#include <iostream>\n\nint main() {\n\tstd::cout << "
-                   "\"Hello World\" << std::endl;\n}"));
+Note *EditorController::currentNote() { return _currentNote; }
 
-  return nodes;
+void EditorController::setCurrentNote(Note *note) {
+  _currentNote = note;
+  emit currentNoteChanged();
 }
-
-EditorController::EditorController(QObject *parent)
-    : QObject(parent), _note(new Note("Untitled", std::move(getTestNodes()),
-                                      QDateTime::currentDateTime(), this)) {}
-
-QAbstractListModel *EditorController::note() const noexcept { return _note; }
 
 } // namespace pad

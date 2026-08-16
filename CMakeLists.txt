@@ -36,6 +36,10 @@ qt_add_executable(${PROJECT}
   src/pages/editor/imagenode.cpp
   src/pages/editor/codenode.hpp
   src/pages/editor/codenode.cpp
+  src/notes/notescontroller.hpp
+  src/notes/notescontroller.cpp
+  src/notes/notesmodel.hpp
+  src/notes/notesmodel.cpp
   assets.qrc
 )
 
@@ -45,19 +49,27 @@ qt_add_qml_module(${PROJECT}
   QML_FILES
     src/qml/MainWindow.qml
     src/qml/pages/Editor.qml
-    src/qml/components/ToolbarButton.qml
-    src/qml/components/EditorHeader.qml
-    src/qml/components/EditorNoteTitle.qml
-    src/qml/components/EditorTextNode.qml
-    src/qml/components/Carette.qml
-    src/qml/components/EditorBaseNode.qml
-    src/qml/components/EditorInsertMenu.qml
-    src/qml/components/EditorInsertTrigger.qml
-    src/qml/components/EditorInsert.qml
-    src/qml/components/NodeRemoveButton.qml
-    src/qml/components/EditorImageNode.qml
+    src/qml/icons/Chevron.qml
+    src/qml/components/editor/ToolbarButton.qml
+    src/qml/components/editor/EditorHeader.qml
+    src/qml/components/editor/EditorNoteTitle.qml
+    src/qml/components/editor/EditorTextNode.qml
+    src/qml/components/editor/EditorBaseNode.qml
+    src/qml/components/editor/EditorInsertMenu.qml
+    src/qml/components/editor/EditorInsertTrigger.qml
+    src/qml/components/editor/EditorInsert.qml
+    src/qml/components/editor/NodeRemoveButton.qml
+    src/qml/components/editor/EditorImageNode.qml
+    src/qml/components/editor/EditorCodeNode.qml
+    src/qml/components/sidebar/SidebarAddButton.qml
+    src/qml/components/sidebar/SidebarAppName.qml
+    src/qml/components/sidebar/SidebarHeader.qml
+    src/qml/components/sidebar/Sidebar.qml
+    src/qml/components/sidebar/NotesListHeader.qml
+    src/qml/components/sidebar/NotesList.qml
+    src/qml/components/sidebar/NoteListItem.qml
     src/qml/components/OpenImageDialog.qml
-    src/qml/components/EditorCodeNode.qml
+    src/qml/components/Carette.qml
 )
 
 target_link_libraries(${PROJECT} PRIVATE

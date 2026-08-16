@@ -18,8 +18,9 @@ int main(int argc, char *argv[]) {
 
   pad::Theme *defaultTheme = new pad::DarkTheme();
   pad::MainWindow mainWindow{QGuiApplication::primaryScreen()};
+  pad::NotesController notesController;
 
-  pad::SuperApp superApp{defaultTheme, &mainWindow};
+  pad::SuperApp superApp{defaultTheme, &mainWindow, &notesController};
 
   QQmlApplicationEngine engine;
 
