@@ -25,6 +25,7 @@ class Note : public QAbstractListModel {
 
   Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
   Q_PROPERTY(QDateTime createdAt MEMBER _createdAt CONSTANT)
+  Q_PROPERTY(int nodesCount READ nodesCount NOTIFY nodesCountChanged)
 public:
   enum Roles { NodeRole = Qt::UserRole + 1 };
 
@@ -44,9 +45,11 @@ public:
 
   QString title() const;
   void setTitle(const QString &title);
+  int nodesCount() const;
 
 signals:
   void titleChanged();
+  void nodesCountChanged();
 
 private slots:
   void onNodeRemoveRequested();

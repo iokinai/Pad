@@ -8,7 +8,7 @@ ColumnLayout {
 
     required property var editor
 
-    property var note: root.editor.note
+    property var note: root.editor.currentNote
 
     EditorHeader {
         Layout.preferredWidth: parent.width
@@ -47,7 +47,7 @@ ColumnLayout {
                 Layout.fillHeight: true
 
                 clip: true
-                model: root.editor.note
+                model: root.note
 
                 delegate: Loader {
                     width: ListView.view.width
@@ -69,7 +69,7 @@ ColumnLayout {
 
                     onLoaded: {
                         item.nodeValue = node
-                        item.noteValue = root.editor.note
+                        item.noteValue = root.note
                     }
                 }
             }

@@ -6,6 +6,7 @@ TextField {
 
     required property var note
 
+    text: root.note.title
     font.pixelSize: 28
     font.weight: Font.Bold
     color: superApp.theme.text
