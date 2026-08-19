@@ -5,6 +5,9 @@
 
 #include <QDateTime>
 #include <QDir>
+#include <QFuture>
+#include <QFutureWatcher>
+#include <QtConcurrent/QtConcurrent>
 #include <QtMath>
 #include <exceptions/couldnotsavefile.hpp>
 #include <exceptions/invalidfile.hpp>
@@ -16,28 +19,36 @@
 #include <storage/markup.hpp>
 #include <utils.hpp>
 
+using namespace pad::detail;
+
 namespace pad {
 
-void NotesController::loadNotes() {
+LoadNotesResult NotesController::loadNotes() {
   QDir dir(basicPath);
+  LoadNotesResult loadResult;
 
   if (!dir.exists()) {
     dir.mkpath(basicPath);
-    return;
+    return {};
   }
 
   QStringList files = dir.entryList({"*.pad"}, QDir::Files);
-  _totalCount = files.size();
-  emit notesCountChanged();
+  loadResult.totalCount = files.size();
+  loadResult.notes.reserve(loadResult.totalCount);
 
   for (size_t i = 0; i < qMin(LOAD_FIRST_COUNT, files.size()); ++i) {
     auto apath = dir.absoluteFilePath(files[i]);
-    Note *note = loadSingleNote(apath);
+    auto result = loadSingleNote(apath);
 
-    if (note == nullptr)
+    if (result == std::nullopt)
       continue;
-    _notePathMap[apath] = note;
+
+    result->name = apath;
+
+    loadResult.notes.push_back(result.value());
   }
+
+  return loadResult;
 }
 
 static QByteArray readZipEntryToBuffer(void *reader) {
@@ -102,9 +113,13 @@ Note *NotesController::loadAndParseContent(void *reader,
   return buildNoteFromJson(doc.object(), manifest, _storage);
 }
 
-void NotesController::registerMedia(void *reader, MediaStorage *storage) {
+QVector<QPair<QString, QByteArray>>
+NotesController::extractMediaWithDataFromArchive(void *reader,
+                                                 MediaStorage *storage) {
+  QVector<QPair<QString, QByteArray>> media;
+
   if (mz_zip_reader_goto_first_entry(reader) != MZ_OK) {
-    return;
+    return {};
   }
 
   do {
@@ -125,15 +140,18 @@ void NotesController::registerMedia(void *reader, MediaStorage *storage) {
     }
 
     QString imageName = QFileInfo(fileName).fileName();
-    storage->addMedia(imageName, imageBytes);
+    media.emplace_back(imageName, imageBytes);
 
   } while (mz_zip_reader_goto_next_entry(reader) == MZ_OK);
+
+  return media;
 }
 
-Note *NotesController::loadSingleNote(const QString &path) {
+std::optional<LoadNoteResult>
+NotesController::loadSingleNote(const QString &path) {
   void *reader = mz_zip_reader_create();
   if (!reader) {
-    return nullptr;
+    return std::nullopt;
   }
 
   struct Cleanup {
@@ -145,27 +163,34 @@ Note *NotesController::loadSingleNote(const QString &path) {
   } cleanup{reader};
 
   if (mz_zip_reader_open_file(reader, path.toUtf8().constData()) != MZ_OK) {
-    return nullptr;
+    return std::nullopt;
   }
 
   try {
     Manifest m = loadAndParseManifest(reader);
     Note *note = loadAndParseContent(reader, m);
-    registerMedia(reader, _storage);
-
-    note->setParent(&_notesModel);
-    prepareAndPushCreatedNote(note);
-    return note;
+    auto media = extractMediaWithDataFromArchive(reader, _storage);
+    return LoadNoteResult{note, media};
   } catch (const std::exception &e) {
     // LOG exception
   } catch (...) {
     // LOG exception
   }
 
-  return nullptr;
+  return std::nullopt;
 }
 
-void NotesController::saveNote(Note *note) {
+QVector<QPair<QString, QByteArray>>
+NotesController::loadMediaWithDataFromStorage(const QStringList &mediaPaths) {
+  QVector<QPair<QString, QByteArray>> media;
+  for (const auto &path : mediaPaths) {
+    QByteArray data = _storage->getMedia(path);
+    media.append({path, data});
+  }
+  return media;
+}
+
+NoteSaveData NotesController::prepareNoteSaveData(Note *note) {
   QString path = _notePathMap.key(note);
 
   if (path.isEmpty()) {
@@ -176,9 +201,9 @@ void NotesController::saveNote(Note *note) {
   Manifest m(note->createdAt());
   QJsonObject markup = buildJsonForNote(note);
   auto media = extractMediaFromNote(note);
-  saveNoteToPad(path, m.toJson(), markup, media);
-  _unsavedNotes.remove(note);
-  note->setHasUnsavedChanges(false);
+
+  return NoteSaveData{path, m.toJson(), markup,
+                      loadMediaWithDataFromStorage(media)};
 }
 
 QStringList NotesController::extractMediaFromNote(Note *note) {
@@ -195,10 +220,9 @@ QStringList NotesController::extractMediaFromNote(Note *note) {
   return media;
 }
 
-void NotesController::saveNoteToPad(const QString &path,
-                                    const QJsonObject &manifest,
-                                    const QJsonObject &markup,
-                                    const QStringList &mediaPaths) {
+void NotesController::saveNoteToPad(
+    const QString &path, const QJsonObject &manifest, const QJsonObject &markup,
+    const QVector<QPair<QString, QByteArray>> &medias) {
   void *writer = mz_zip_writer_create();
   if (!writer) {
     throw CouldNotSaveFile();
@@ -242,9 +266,8 @@ void NotesController::saveNoteToPad(const QString &path,
     throw CouldNotSaveFile();
   }
 
-  for (const QString &mediaPath : mediaPaths) {
-    QByteArray data = _storage->getMedia(mediaPath);
-    if (!writeEntry("media/" + mediaPath, data)) {
+  for (const auto &media : medias) {
+    if (!writeEntry("media/" + media.first, media.second)) {
       throw CouldNotSaveFile();
     }
   }
@@ -254,8 +277,8 @@ void NotesController::addEmptyNote() {
   auto note =
       new Note("", {}, QDateTime::currentDateTime(), _storage, &_notesModel);
   ++_totalCount;
-  saveNote(note);
   prepareAndPushCreatedNote(note);
+  saveNoteAsync(note);
 }
 
 QString NotesController::makeNoteName() {
@@ -282,7 +305,7 @@ NotesController::NotesController(MediaStorage *storage, QObject *parent)
   connect(&_notesModel, &NotesModel::noteAdded, this,
           &NotesController::onNoteAdded);
 
-  loadNotes();
+  loadNotesAsync();
 }
 
 size_t NotesController::notesCount() const { return _totalCount; }
@@ -292,6 +315,71 @@ NotesModel *NotesController::notes() { return &_notesModel; }
 void NotesController::onNoteAdded() {
   ++_loaded;
   emit notesCountChanged();
+}
+
+void NotesController::loadNotesAsync() {
+  auto watcher = new QFutureWatcher<LoadNotesResult>();
+
+  connect(watcher, &QFutureWatcher<LoadNotesResult>::finished, this,
+          [watcher, this]() {
+            auto results = watcher->result();
+            _totalCount = results.totalCount;
+
+            for (const auto &result : results.notes) {
+              result.loadedNote->setParent(&_notesModel);
+              _notePathMap[result.name] = result.loadedNote;
+              prepareAndPushCreatedNote(result.loadedNote);
+
+              for (const auto &media : result.medias) {
+                _storage->addMedia(media.first, media.second);
+              }
+            }
+
+            watcher->deleteLater();
+          });
+
+  watcher->setFuture(QtConcurrent::run([this]() {
+    auto results = loadNotes();
+
+    for (const auto &result : results.notes) {
+      if (qApp) {
+        result.loadedNote->moveToThread(qApp->thread());
+      }
+    }
+
+    return results;
+  }));
+}
+
+void NotesController::saveNoteAsync(Note *note) {
+  auto saveData = prepareNoteSaveData(note);
+  note->setHasUnsavedChanges(false);
+  _unsavedNotes.remove(note);
+
+  auto *watcher = new QFutureWatcher<bool>();
+
+  connect(watcher, &QFutureWatcher<bool>::finished, this,
+          [watcher, note, this]() {
+            auto result = watcher->result();
+
+            if (!result) {
+              note->setHasUnsavedChanges(true);
+              _unsavedNotes.insert(note);
+              emit couldNotSaveNote();
+            }
+
+            watcher->deleteLater();
+          });
+
+  watcher->setFuture(QtConcurrent::run([this, saveData]() {
+    try {
+      saveNoteToPad(saveData.path, saveData.manifest, saveData.markup,
+                    saveData.mediaData);
+      return true;
+    } catch (...) {
+      return false;
+    }
+  }));
 }
 
 } // namespace pad

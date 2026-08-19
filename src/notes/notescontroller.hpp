@@ -9,6 +9,28 @@
 
 namespace pad {
 
+namespace detail {
+
+struct LoadNoteResult {
+  Note *loadedNote;
+  QVector<QPair<QString, QByteArray>> medias;
+  QString name;
+};
+
+struct LoadNotesResult {
+  QVector<LoadNoteResult> notes;
+  size_t totalCount;
+};
+
+struct NoteSaveData {
+  QString path;
+  QJsonObject manifest;
+  QJsonObject markup;
+  QVector<QPair<QString, QByteArray>> mediaData;
+};
+
+} // namespace detail
+
 class NotesController : public QObject {
   Q_OBJECT
 
@@ -28,15 +50,22 @@ class NotesController : public QObject {
   Q_PROPERTY(size_t notesCount READ notesCount NOTIFY notesCountChanged)
   Q_PROPERTY(NotesModel *notes READ notes CONSTANT)
 
-  void loadNotes();
-  Note *loadSingleNote(const QString &path);
+  detail::LoadNotesResult loadNotes();
+  void loadNotesAsync();
+  std::optional<detail::LoadNoteResult> loadSingleNote(const QString &path);
 
   Manifest loadAndParseManifest(void *reader);
   Note *loadAndParseContent(void *reader, const Manifest &manifest);
-  void registerMedia(void *reader, MediaStorage *storage);
+  QVector<QPair<QString, QByteArray>>
+  extractMediaWithDataFromArchive(void *reader, MediaStorage *storage);
   QStringList extractMediaFromNote(Note *note);
   void saveNoteToPad(const QString &path, const QJsonObject &manifest,
-                     const QJsonObject &markup, const QStringList &mediaPaths);
+                     const QJsonObject &markup,
+                     const QVector<QPair<QString, QByteArray>> &medias);
+  detail::NoteSaveData prepareNoteSaveData(Note *note);
+
+  QVector<QPair<QString, QByteArray>>
+  loadMediaWithDataFromStorage(const QStringList &mediaPaths);
 
   QString makeNoteName();
 
@@ -47,10 +76,11 @@ public:
   size_t notesCount() const;
   NotesModel *notes();
   Q_INVOKABLE void addEmptyNote();
-  Q_INVOKABLE void saveNote(Note *note);
+  Q_INVOKABLE void saveNoteAsync(Note *note);
 
 signals:
   void notesCountChanged();
+  void couldNotSaveNote();
 
 private slots:
   void onNoteAdded();
