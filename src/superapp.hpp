@@ -13,14 +13,17 @@ class SuperApp : public QObject {
   Theme *_theme;
   MainWindow *_mainWindow;
   NotesController *_notesController;
+  QString _imageProviderPath;
 
   Q_PROPERTY(Theme *theme READ theme WRITE setTheme NOTIFY themeChanged)
   Q_PROPERTY(MainWindow *mainWindow MEMBER _mainWindow CONSTANT)
   Q_PROPERTY(NotesController *notesController READ notesController CONSTANT)
+  Q_PROPERTY(QString imageProviderPath MEMBER _imageProviderPath CONSTANT)
 
 public:
   SuperApp(Theme *defaultTheme, MainWindow *mainWindow,
-           NotesController *notesController, QObject *parent = nullptr);
+           NotesController *notesController, const QString &imageProviderPath,
+           QObject *parent = nullptr);
 
   Theme *theme() const;
   void setTheme(Theme *theme);

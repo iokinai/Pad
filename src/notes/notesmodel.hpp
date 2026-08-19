@@ -26,7 +26,9 @@ public:
 
   QHash<int, QByteArray> roleNames() const override;
 
-  Q_INVOKABLE void addEmptyNote();
+public:
+  void pushNote(Note *notes);
+  void pushNotes(QVector<Note *> &&notes);
 
 signals:
   void noteAdded();

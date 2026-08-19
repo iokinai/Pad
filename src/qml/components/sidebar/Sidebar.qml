@@ -8,7 +8,6 @@ Rectangle {
     required property var editor
 
     color: superApp.theme.sidebar
-    width: 248
     border.width: 1
     border.color: superApp.theme.border
 
@@ -16,7 +15,7 @@ Rectangle {
         anchors.fill: parent
 
         SidebarHeader {
-            notes: superApp.notesController.notes
+            notesController: superApp.notesController
 
             Layout.preferredWidth: root.width
             Layout.topMargin: 18

@@ -6,6 +6,7 @@
 #include <QString>
 #include <QVector>
 #include <pages/editor/node.hpp>
+#include <storage/mediastorage.hpp>
 
 namespace pad {
 
@@ -15,6 +16,8 @@ class Note : public QAbstractListModel {
   QString _title;
   QVector<Node *> _nodes;
   QDateTime _createdAt;
+  MediaStorage *_storage;
+  bool _hasUnsavedChanges = false;
 
   void connectNode(Node *node);
 
@@ -24,13 +27,15 @@ class Note : public QAbstractListModel {
   void insertCode(Node *node, const QString &code, bool above = true);
 
   Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
-  Q_PROPERTY(QDateTime createdAt MEMBER _createdAt CONSTANT)
+  Q_PROPERTY(QDateTime createdAt READ createdAt CONSTANT)
   Q_PROPERTY(int nodesCount READ nodesCount NOTIFY nodesCountChanged)
+  Q_PROPERTY(bool hasUnsavedChanges READ hasUnsavedChanges WRITE
+                 setHasUnsavedChanges NOTIFY hasUnsavedChangesChanged)
 public:
   enum Roles { NodeRole = Qt::UserRole + 1 };
 
   Note(const QString &title, QVector<Node *> &&nodes, QDateTime createdAt,
-       QObject *parent = nullptr);
+       MediaStorage *storage, QObject *parent = nullptr);
 
   virtual int rowCount(const QModelIndex &parent = {}) const override;
   virtual QVariant data(const QModelIndex &index, int role) const override;
@@ -46,14 +51,22 @@ public:
   QString title() const;
   void setTitle(const QString &title);
   int nodesCount() const;
+  const QVector<Node *> &nodes() const;
+  void unsafeSetNodes(QVector<Node *> &&nodes);
+  QDateTime createdAt() const;
+  bool hasUnsavedChanges() const;
+  void setHasUnsavedChanges(bool hasUnsavedChanges);
 
 signals:
   void titleChanged();
   void nodesCountChanged();
+  void noteEdited();
+  void addImageError(const QString &path);
+  void hasUnsavedChangesChanged();
 
 private slots:
   void onNodeRemoveRequested();
-  void onNoteEdited();
+  void onNodeEdited();
 };
 
 } // namespace pad

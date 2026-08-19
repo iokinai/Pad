@@ -15,17 +15,27 @@ class MainWindow : public QObject {
   Q_PROPERTY(int initialWidth MEMBER _initialWidth CONSTANT)
   Q_PROPERTY(int initialHeight MEMBER _initialHeight CONSTANT)
   Q_PROPERTY(EditorController *editor READ editor CONSTANT)
+  Q_PROPERTY(CurrentPage currentPage READ currentPage WRITE setCurrentPage
+                 NOTIFY currentPageChanged)
 
 public:
   enum CurrentPage {
     Editor,
+    Empty,
   };
 
   Q_ENUM(CurrentPage)
 
   MainWindow(QScreen *screen, QObject *parent = nullptr);
-
   EditorController *editor();
+  CurrentPage currentPage();
+  void setCurrentPage(CurrentPage page);
+
+private:
+  CurrentPage _currentPage;
+
+signals:
+  void currentPageChanged();
 };
 
 } // namespace pad

@@ -11,8 +11,6 @@ Button {
     topPadding: 6
     bottomPadding: 6
 
-    height: 32
-
     HoverHandler {
         cursorShape: Qt.PointingHandCursor
     }
@@ -21,7 +19,7 @@ Button {
         radius: 7
         color: root.hovered
             ? superApp.theme.accentSubtle
-            : superApp.theme.card
+            : "transparent"//superApp.theme.card
 
         border.width: 1
         border.color: root.hovered

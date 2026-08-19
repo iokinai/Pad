@@ -30,6 +30,7 @@ public:
   QString removeBorder() const override;
   QString removeText() const override;
   QString monospaceFontFamily() const override;
+  QString accentButtonText() const override;
 };
 
 } // namespace pad

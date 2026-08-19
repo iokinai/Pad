@@ -3,9 +3,11 @@
 namespace pad {
 
 SuperApp::SuperApp(Theme *defaultTheme, MainWindow *mainWindow,
-                   NotesController *notesController, QObject *parent)
+                   NotesController *notesController,
+                   const QString &imageProviderPath, QObject *parent)
     : QObject(parent), _theme(defaultTheme), _mainWindow(mainWindow),
-      _notesController(notesController) {}
+      _notesController(notesController), _imageProviderPath(imageProviderPath) {
+}
 
 Theme *SuperApp::theme() const { return _theme; }
 

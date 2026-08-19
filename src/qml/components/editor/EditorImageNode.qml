@@ -12,7 +12,7 @@ Rectangle {
 
     Image {
         anchors.fill: parent
-        source: root.node.src
+        source: "image://%1/%2".arg(superApp.imageProviderPath).arg(root.node.src)
         fillMode: Image.PreserveAspectFit
     }
 }

@@ -1,20 +1,44 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import PadUi
 
 ColumnLayout {
     id: root
 
     required property var editor
-
     property var note: root.editor.currentNote
+
+    MessageDialog {
+        id: errorDialog
+        buttons: MessageDialog.Ok
+    }
+
+    Connections {
+        target: root.note
+
+        function onAddImageError(path) {
+            errorDialog.title = qsTr("Error adding image")
+            errorDialog.text = qsTr("Could not add image from %1").arg(path)
+            errorDialog.open()
+        }
+    }
+
+    Shortcut {
+        sequences:  ["Ctrl+S", "StandardKey.Save"]
+        enabled: root.note.hasUnsavedChanges
+        onActivated: {
+            superApp.notesController.saveNote(root.note)
+        }
+    }
 
     EditorHeader {
         Layout.preferredWidth: parent.width
         Layout.preferredHeight: 57
         createdAt: new Date()
         note: root.note
+        notesController: superApp.notesController
     }
 
     Item {

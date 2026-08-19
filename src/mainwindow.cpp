@@ -6,23 +6,8 @@
 
 namespace pad {
 
-static QVector<Node *> getTestNodes() {
-  QVector<Node *> nodes;
-
-  nodes.push_back(new TextNode("123"));
-  nodes.push_back(new TextNode("456"));
-  nodes.push_back(new ImageNode(
-      "file:///C:\\Users\\MegaD\\Downloads\\Новий проєкт (1).png"));
-  nodes.push_back(
-      new CodeNode("#include <iostream>\n\nint main() {\n\tstd::cout << "
-                   "\"Hello World\" << std::endl;\n}"));
-
-  return nodes;
-}
-
 MainWindow::MainWindow(QScreen *screen, QObject *parent)
-    : QObject(parent), _editor(new Note("Test", std::move(getTestNodes()),
-                                        QDateTime::currentDateTime(), this)) {
+    : QObject(parent), _editor(nullptr) {
   int w, h;
 
   if (screen == nullptr) {
@@ -38,5 +23,12 @@ MainWindow::MainWindow(QScreen *screen, QObject *parent)
 }
 
 EditorController *MainWindow::editor() { return &_editor; }
+
+MainWindow::CurrentPage MainWindow::currentPage() { return _currentPage; }
+
+void MainWindow::setCurrentPage(CurrentPage page) {
+  _currentPage = page;
+  emit currentPageChanged();
+}
 
 } // namespace pad

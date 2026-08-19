@@ -1,11 +1,12 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import PadUi
 
 RowLayout {
     id: root
 
-    required property var notes
+    required property var notesController
 
     SidebarAppName {}
 
@@ -18,7 +19,7 @@ RowLayout {
         Layout.preferredHeight: 28
 
         onClicked: {
-            notes.addEmptyNote()
+            notesController.addEmptyNote()
         }
     }
 }

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import PadUi
 
 ColumnLayout {
     id: root
@@ -9,7 +10,7 @@ ColumnLayout {
     required property var notes
     required property int notesCount
 
-    property int currentIndex: 0
+    property int currentIndex: -1
 
     NotesListHeader {
         id: header
@@ -38,6 +39,7 @@ ColumnLayout {
             onClicked: {
                 root.currentIndex = index
                 editor.currentNote = note
+                superApp.mainWindow.currentPage = CxxMainWindow.Editor
             }
         }
     }
