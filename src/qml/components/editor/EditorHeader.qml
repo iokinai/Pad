@@ -87,7 +87,7 @@ Rectangle {
             palette.buttonText: superApp.theme.accentButtonText
 
             onClicked: {
-                root.notesController.saveNote(root.note)
+                root.notesController.saveNoteAsync(root.note)
             }
         }
 
