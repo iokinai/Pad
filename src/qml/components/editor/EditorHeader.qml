@@ -34,7 +34,7 @@ Rectangle {
             font.weight: Font.Bold
             color: superApp.theme.textMuted
             rightPadding: 4
-            text: qsTr("ADD", "Add note text")
+            text: qsTr("ADD", "Add node text")
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
         }
 

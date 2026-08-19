@@ -2,6 +2,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QTranslator>
 #include <mainwindow.hpp>
 #include <padimageprovider.hpp>
 #include <pages/editor/node.hpp>
@@ -17,8 +18,26 @@ void loadFonts() {
   QFontDatabase::addApplicationFont(":/assets/fonts/JetBrainsMono-Medium.ttf");
 }
 
+void loadLanguage(QTranslator &translator, QLocale &locale,
+                  QGuiApplication &app) {
+  locale = QLocale::system();
+  // for now we only use Russian
+
+  if (!translator.load(":/lang/ru_RU.qm")) {
+    qDebug() << "Failed to load language file";
+    return;
+  }
+
+  app.installTranslator(&translator);
+}
+
 int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
+
+  QTranslator translator;
+  QLocale locale;
+
+  loadLanguage(translator, locale, app);
 
   QQmlApplicationEngine engine;
 
