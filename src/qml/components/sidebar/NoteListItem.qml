@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Basic
+import QtQuick.Layouts
 
 Button {
     id: root
@@ -38,13 +39,29 @@ Button {
         anchors.rightMargin: 10
         anchors.fill: parent
 
-        Text {
-            font.pixelSize: 13
-            font.weight: Font.Bold
-            color: root.active
-                ? superApp.theme.accent
-                : superApp.theme.text
-            text: note.title ? note.title : qsTr("Untitled", "Note title placeholder")
+        RowLayout {
+            width: parent.width
+            Text {
+                font.pixelSize: 13
+                font.weight: Font.Bold
+                color: root.active
+                    ? superApp.theme.accent
+                    : superApp.theme.text
+                text: note.title ? note.title : qsTr("Untitled", "Note title placeholder")
+            }
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+            }
+
+            Rectangle {
+                visible: root.note.hasUnsavedChanges
+                width: 6
+                height: 6
+                color: superApp.theme.accent
+                radius: width / 2
+            }
         }
 
         Text {

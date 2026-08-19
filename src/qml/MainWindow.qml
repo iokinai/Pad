@@ -12,18 +12,19 @@ ApplicationWindow {
     width: root.mainWindow.initialWidth
     height: root.mainWindow.initialHeight
 
-    // StackView {
-    //     id: stackView
-    //     anchors.fill: parent
-    //     initialItem: editorPage
-    // }
-
-    // Component {
-    //     id: editorPage
-    //     Editor {
-    //         editor: root.mainWindow.editor
-    //     }
-    // }
+    Connections {
+        target: root.mainWindow
+        function onCurrentPageChanged() {
+            switch (root.mainWindow.currentPage) {
+                case CxxMainWindow.Empty:
+                    stackView.replace(emptyStatePage)
+                    break
+                case CxxMainWindow.Editor:
+                    stackView.replace(editorPage)
+                    break
+            }
+        }
+    }
 
     RowLayout {
         spacing: 0
@@ -32,23 +33,36 @@ ApplicationWindow {
 
         Sidebar {
             editor: root.mainWindow.editor
-            Layout.preferredHeight: parent.height
+            width: 248
+            Layout.fillHeight: true
         }
 
-        Editor {
-            editor: root.mainWindow.editor
+        StackView {
+            id: stackView
+            initialItem: emptyStatePage
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+            pushEnter: Transition {}
+            pushExit: Transition {}
+            popEnter: Transition {}
+            popExit: Transition {}
+            replaceEnter: Transition {}
+            replaceExit: Transition {}
         }
 
-        // StackView {
-        //     id: stackView
-        //     initialItem: editorPage
-        // }
+        Component {
+            id: editorPage
+            Editor {
+                editor: root.mainWindow.editor
+            }
+        }
 
-        // Component {
-        //     id: editorPage
-        //     Editor {
-        //         editor: root.mainWindow.editor
-        //     }
-        // }
+        Component {
+            id: emptyStatePage
+            EmptyState {
+                notesController: superApp.notesController
+            }
+        }
     }
 }

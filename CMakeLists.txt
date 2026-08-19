@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 set(PROJECT Pad)
-project(${PROJECT})
+project(${PROJECT} VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -9,6 +9,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick)
+find_package(minizip-ng CONFIG REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
@@ -40,6 +41,19 @@ qt_add_executable(${PROJECT}
   src/notes/notescontroller.cpp
   src/notes/notesmodel.hpp
   src/notes/notesmodel.cpp
+  src/storage/manifest.hpp
+  src/storage/manifest.cpp
+  src/storage/markup.hpp
+  src/storage/markup.cpp
+  src/storage/mediastorage.hpp
+  src/storage/mediastorage.cpp
+  src/exceptions/invalidmanifest.hpp
+  src/exceptions/invalidmanifest.cpp
+  src/exceptions/invalidjson.hpp
+  src/padimageprovider.hpp
+  src/padimageprovider.cpp
+  src/utils.hpp
+  src/utils.cpp
   assets.qrc
 )
 
@@ -49,6 +63,7 @@ qt_add_qml_module(${PROJECT}
   QML_FILES
     src/qml/MainWindow.qml
     src/qml/pages/Editor.qml
+    src/qml/pages/EmptyState.qml
     src/qml/icons/Chevron.qml
     src/qml/components/editor/ToolbarButton.qml
     src/qml/components/editor/EditorHeader.qml
@@ -70,13 +85,29 @@ qt_add_qml_module(${PROJECT}
     src/qml/components/sidebar/NoteListItem.qml
     src/qml/components/OpenImageDialog.qml
     src/qml/components/Carette.qml
+
 )
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  add_compile_options(-g -gcodeview)
+endif()
+
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set_target_properties(${PROJECT} PROPERTIES
+      MACOSX_BUNDLE_GUI_IDENTIFIER com.pad.Pad
+      MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+      MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+      MACOSX_BUNDLE TRUE
+      WIN32_EXECUTABLE TRUE
+  )
+endif()
 
 target_link_libraries(${PROJECT} PRIVATE
   Qt6::Core
   Qt6::Gui
   Qt6::Qml
   Qt6::Quick
+  MINIZIP::minizip-ng
 )
 
 target_include_directories(${PROJECT} PRIVATE

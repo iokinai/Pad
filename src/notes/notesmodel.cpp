@@ -22,9 +22,17 @@ QHash<int, QByteArray> NotesModel::roleNames() const {
   return {{Roles::NoteRole, QByteArrayLiteral("note")}};
 }
 
-void NotesModel::addEmptyNote() {
-  beginInsertRows({}, 0, 0);
-  _notes.insert(0, new Note("", {}, QDateTime::currentDateTime(), this));
+void NotesModel::pushNote(Note *note) {
+  beginInsertRows({}, _notes.size(), _notes.size());
+  _notes.push_back(note);
+  endInsertRows();
+
+  emit noteAdded();
+}
+
+void NotesModel::pushNotes(QVector<Note *> &&notes) {
+  beginInsertRows({}, _notes.size(), _notes.size() + notes.size() - 1);
+  _notes.append(std::move(notes));
   endInsertRows();
 
   emit noteAdded();

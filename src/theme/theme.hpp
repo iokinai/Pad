@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QString>
+#include <qtmetamacros.h>
 
 namespace pad {
 
@@ -28,6 +29,7 @@ class Theme : public QObject {
   Q_PROPERTY(QString remove READ remove CONSTANT)
   Q_PROPERTY(QString removeBorder READ removeBorder CONSTANT)
   Q_PROPERTY(QString removeText READ removeText CONSTANT)
+  Q_PROPERTY(QString accentButtonText READ accentButtonText CONSTANT)
 
 public:
   explicit Theme(QObject *parent = nullptr);
@@ -53,6 +55,7 @@ public:
   virtual QString removeBorder() const = 0;
   virtual QString removeText() const = 0;
   virtual QString monospaceFontFamily() const = 0;
+  virtual QString accentButtonText() const = 0;
 };
 
 } // namespace pad

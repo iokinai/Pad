@@ -29,5 +29,8 @@ QString LightTheme::monospaceFontFamily() const {
 QString LightTheme::remove() const { return QStringLiteral("#1fc83c3c"); }
 QString LightTheme::removeBorder() const { return QStringLiteral("66c83c3c"); }
 QString LightTheme::removeText() const { return QStringLiteral("#e05555"); }
+QString LightTheme::accentButtonText() const {
+  return QStringLiteral("#ffffff");
+}
 
 } // namespace pad
