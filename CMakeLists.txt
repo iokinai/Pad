@@ -8,7 +8,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick LinguistTools)
 find_package(minizip-ng CONFIG REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.10)
@@ -85,7 +85,13 @@ qt_add_qml_module(${PROJECT}
     src/qml/components/sidebar/NoteListItem.qml
     src/qml/components/OpenImageDialog.qml
     src/qml/components/Carette.qml
+)
 
+qt_add_translations(${PROJECT}
+  TS_FILES
+    lang/ru_RU.ts
+  RESOURCE_PREFIX
+    "/lang"
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
