@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import PadUi
 
 ApplicationWindow {
@@ -11,6 +12,11 @@ ApplicationWindow {
 
     width: root.mainWindow.initialWidth
     height: root.mainWindow.initialHeight
+
+    MessageDialog {
+        id: errorDialog
+        buttons: MessageDialog.Ok
+    }
 
     Connections {
         target: root.mainWindow
@@ -23,6 +29,15 @@ ApplicationWindow {
                     stackView.replace(editorPage)
                     break
             }
+        }
+    }
+
+    Connections {
+        target: superApp.notesController
+        function onCouldNotSaveNote() {
+            errorDialog.title = qsTr("Error saving note")
+            errorDialog.text = qsTr("Could not save note")
+            errorDialog.open()
         }
     }
 

@@ -29,7 +29,7 @@ ColumnLayout {
         sequences:  ["Ctrl+S", "StandardKey.Save"]
         enabled: root.note.hasUnsavedChanges
         onActivated: {
-            superApp.notesController.saveNote(root.note)
+            superApp.notesController.saveNoteAsync(root.note)
         }
     }
 
