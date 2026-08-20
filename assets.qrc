@@ -8,5 +8,6 @@
         <file alias="fonts/JetBrainsMono-Medium.ttf">assets/fonts/JetBrainsMono-Medium.ttf</file>
         <file alias="img/plus.svg">assets/img/plus.svg</file>
         <file alias="img/doc.svg">assets/img/doc.svg</file>
+        <file alias="img/settings.svg">assets/img/settings.svg</file>
     </qresource>
 </RCC>

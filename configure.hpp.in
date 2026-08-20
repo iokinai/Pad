@@ -1,0 +1,5 @@
+#pragma once
+
+#define PAD_PROJECT "${PROJECT}"
+#define PAD_VERSION "${PROJECT_VERSION}"
+#define PAD_GITHUB "https://github.com/iokinai/Pad"

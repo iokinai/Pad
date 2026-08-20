@@ -33,4 +33,6 @@ QString LightTheme::accentButtonText() const {
   return QStringLiteral("#ffffff");
 }
 
+Theme::ThemeTag LightTheme::themeTag() const { return ThemeTag::Light; }
+
 } // namespace pad

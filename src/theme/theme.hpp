@@ -2,13 +2,21 @@
 
 #include <QObject>
 #include <QString>
-#include <qtmetamacros.h>
 
 namespace pad {
 
 class Theme : public QObject {
   Q_OBJECT
 
+public:
+  enum ThemeTag {
+    Dark,
+    Light,
+  };
+
+  Q_ENUM(ThemeTag)
+
+private:
   Q_PROPERTY(QString bg READ bg CONSTANT)
   Q_PROPERTY(QString sidebar READ sidebar CONSTANT)
   Q_PROPERTY(QString sidebarHover READ sidebarHover CONSTANT)
@@ -30,6 +38,7 @@ class Theme : public QObject {
   Q_PROPERTY(QString removeBorder READ removeBorder CONSTANT)
   Q_PROPERTY(QString removeText READ removeText CONSTANT)
   Q_PROPERTY(QString accentButtonText READ accentButtonText CONSTANT)
+  Q_PROPERTY(ThemeTag themeTag READ themeTag CONSTANT)
 
 public:
   explicit Theme(QObject *parent = nullptr);
@@ -56,6 +65,7 @@ public:
   virtual QString removeText() const = 0;
   virtual QString monospaceFontFamily() const = 0;
   virtual QString accentButtonText() const = 0;
+  virtual ThemeTag themeTag() const = 0;
 };
 
 } // namespace pad

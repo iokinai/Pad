@@ -28,6 +28,9 @@ ApplicationWindow {
                 case CxxMainWindow.Editor:
                     stackView.replace(editorPage)
                     break
+                case CxxMainWindow.Settings:
+                    stackView.replace(settingsPage)
+                    break
             }
         }
     }
@@ -47,6 +50,7 @@ ApplicationWindow {
         anchors.fill: parent
 
         Sidebar {
+            mainWindow: root.mainWindow
             editor: root.mainWindow.editor
             width: 248
             Layout.fillHeight: true
@@ -77,6 +81,12 @@ ApplicationWindow {
             id: emptyStatePage
             EmptyState {
                 notesController: superApp.notesController
+            }
+        }
+
+        Component {
+            id: settingsPage
+            Settings {
             }
         }
     }

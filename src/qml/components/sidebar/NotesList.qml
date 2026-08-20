@@ -10,6 +10,8 @@ ColumnLayout {
     required property var notes
     required property int notesCount
 
+    signal anyButtonClicked()
+
     property int currentIndex: -1
 
     NotesListHeader {
@@ -40,6 +42,7 @@ ColumnLayout {
                 root.currentIndex = index
                 editor.currentNote = note
                 superApp.mainWindow.currentPage = CxxMainWindow.Editor
+                root.anyButtonClicked()
             }
         }
     }

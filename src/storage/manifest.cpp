@@ -1,12 +1,11 @@
+#include <configure.hpp>
 #include <exceptions/invalidmanifest.hpp>
 #include <storage/manifest.hpp>
 
 namespace pad {
 
-constexpr const char *APPLICATION_NAME = "Pad";
-
 Manifest::Manifest(const QDateTime &createdAt)
-    : _applicationName(APPLICATION_NAME), _createdAt(createdAt) {}
+    : _applicationName(PAD_PROJECT), _createdAt(createdAt) {}
 
 Manifest Manifest::now() noexcept {
   QDateTime createdAt = QDateTime::currentDateTime();
@@ -31,7 +30,7 @@ Manifest Manifest::fromJson(const QJsonObject &json) {
 
   QString applicationName = json["applicationName"].toString();
 
-  if (applicationName != APPLICATION_NAME) {
+  if (applicationName != PAD_PROJECT) {
     throw InvalidManifest();
   }
 
