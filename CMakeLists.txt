@@ -50,6 +50,12 @@ qt_add_executable(${PROJECT}
   src/exceptions/invalidmanifest.hpp
   src/exceptions/invalidmanifest.cpp
   src/exceptions/invalidjson.hpp
+  src/language/languagecontroller.hpp
+  src/language/languagecontroller.cpp
+  src/language/language.hpp
+  src/language/language.cpp
+  src/language/languagemodel.hpp
+  src/language/languagemodel.cpp
   src/padimageprovider.hpp
   src/padimageprovider.cpp
   src/utils.hpp
@@ -64,7 +70,12 @@ qt_add_qml_module(${PROJECT}
     src/qml/MainWindow.qml
     src/qml/pages/Editor.qml
     src/qml/pages/EmptyState.qml
+    src/qml/pages/Settings.qml
     src/qml/icons/Chevron.qml
+    src/qml/icons/Sun.qml
+    src/qml/icons/Moon.qml
+    src/qml/components/Toggle.qml
+    src/qml/components/Select.qml
     src/qml/components/editor/ToolbarButton.qml
     src/qml/components/editor/EditorHeader.qml
     src/qml/components/editor/EditorNoteTitle.qml
@@ -83,6 +94,13 @@ qt_add_qml_module(${PROJECT}
     src/qml/components/sidebar/NotesListHeader.qml
     src/qml/components/sidebar/NotesList.qml
     src/qml/components/sidebar/NoteListItem.qml
+    src/qml/components/sidebar/SidebarButton.qml
+    src/qml/components/settings/SettingsHeader.qml
+    src/qml/components/settings/AppearanceSection.qml
+    src/qml/components/settings/LanguageSection.qml
+    src/qml/components/settings/AboutSection.qml
+    src/qml/components/settings/SettingsBasicSection.qml
+    src/qml/components/settings/SectionTitleWithDescription.qml
     src/qml/components/OpenImageDialog.qml
     src/qml/components/Carette.qml
 )
@@ -90,8 +108,14 @@ qt_add_qml_module(${PROJECT}
 qt_add_translations(${PROJECT}
   TS_FILES
     lang/ru_RU.ts
+    lang/en_US.ts
   RESOURCE_PREFIX
     "/lang"
+)
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/configure.hpp.in
+  ${CMAKE_CURRENT_BINARY_DIR}/configure.hpp
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -119,4 +143,5 @@ target_link_libraries(${PROJECT} PRIVATE
 
 target_include_directories(${PROJECT} PRIVATE
   src
+  ${CMAKE_CURRENT_BINARY_DIR}
 )

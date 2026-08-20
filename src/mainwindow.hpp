@@ -22,6 +22,7 @@ public:
   enum CurrentPage {
     Editor,
     Empty,
+    Settings,
   };
 
   Q_ENUM(CurrentPage)

@@ -1,21 +1,48 @@
+#include <configure.hpp>
 #include <superapp.hpp>
+#include <theme/darktheme.hpp>
+#include <theme/lighttheme.hpp>
 
 namespace pad {
 
 SuperApp::SuperApp(Theme *defaultTheme, MainWindow *mainWindow,
                    NotesController *notesController,
-                   const QString &imageProviderPath, QObject *parent)
+                   const QString &imageProviderPath,
+                   LanguageController *languageController, QObject *parent)
     : QObject(parent), _theme(defaultTheme), _mainWindow(mainWindow),
-      _notesController(notesController), _imageProviderPath(imageProviderPath) {
-}
+      _notesController(notesController), _imageProviderPath(imageProviderPath),
+      _languageController(languageController) {}
 
 Theme *SuperApp::theme() const { return _theme; }
 
-void SuperApp::setTheme(Theme *theme) {
-  _theme = theme;
+NotesController *SuperApp::notesController() { return _notesController; }
+
+void SuperApp::setTheme(Theme::ThemeTag themeTag) {
+  if (themeTag == _theme->themeTag())
+    return;
+
+  delete _theme;
+
+  switch (themeTag) {
+  case Theme::ThemeTag::Light:
+    _theme = new LightTheme();
+    break;
+  case Theme::ThemeTag::Dark:
+    _theme = new DarkTheme();
+    break;
+  }
+
   emit themeChanged();
 }
 
-NotesController *SuperApp::notesController() { return _notesController; }
+LanguageController *SuperApp::languageController() {
+  return _languageController;
+}
+
+QString SuperApp::applicationName() const { return PAD_PROJECT; }
+
+QString SuperApp::applicationVersion() const { return PAD_VERSION; }
+
+QString SuperApp::applicationGitHub() const { return PAD_GITHUB; }
 
 } // namespace pad

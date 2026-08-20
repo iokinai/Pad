@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE TS>
-<TS version="2.1" language="ru_RU">
+<TS version="2.1" language="en_US">
 <context>
     <name>AboutSection</name>
     <message>
@@ -10,7 +10,7 @@
             />
         <source>ABOUT</source>
         <comment>About section title</comment>
-        <translation>О ПРИЛОЖЕНИИ</translation>
+        <translation>ABOUT</translation>
     </message>
     <message>
         <location
@@ -19,7 +19,7 @@
             />
         <source>Application</source>
         <comment>Application name text</comment>
-        <translation>Приложение</translation>
+        <translation>Application</translation>
     </message>
     <message>
         <location
@@ -28,7 +28,7 @@
             />
         <source>Version</source>
         <comment>Application version text</comment>
-        <translation>Версия</translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location
@@ -49,7 +49,7 @@
             />
         <source>APPEARANCE</source>
         <comment>Settings appearance section</comment>
-        <translation>ВИД</translation>
+        <translation>APPEARANCE</translation>
     </message>
     <message>
         <location
@@ -58,7 +58,7 @@
             />
         <source>Theme</source>
         <comment>Appearance theme text title</comment>
-        <translation>Тема</translation>
+        <translation>Theme</translation>
     </message>
     <message>
         <location
@@ -67,7 +67,7 @@
             />
         <source>Switch between light and dark mode</source>
         <comment>Appearance theme text description</comment>
-        <translation>Переключение между светлой и темной темами</translation>
+        <translation>Switch between light and dark mode</translation>
     </message>
     <message>
         <location
@@ -76,7 +76,7 @@
             />
         <source>Dark</source>
         <comment>Appearance dark theme text</comment>
-        <translation>Темная тема</translation>
+        <translation>Dark</translation>
     </message>
     <message>
         <location
@@ -85,26 +85,24 @@
             />
         <source>Light</source>
         <comment>Appearance light theme text</comment>
-        <translation>Светлая тема</translation>
+        <translation>Light</translation>
     </message>
 </context>
 <context>
     <name>Editor</name>
     <message>
         <source>Error adding imageg</source>
-        <translation
-                type="vanished"
-            >Ошибка при добавлении изображения</translation>
+        <translation type="vanished">Error adding imageg</translation>
     </message>
     <message>
         <location filename="../src/qml/pages/Editor.qml" line="22" />
         <source>Error adding image</source>
-        <translation>Ошибка при добавлении изображения</translation>
+        <translation>Error adding image</translation>
     </message>
     <message>
         <location filename="../src/qml/pages/Editor.qml" line="23" />
         <source>Could not add image from %1</source>
-        <translation>Не удалось добавить изображение %1</translation>
+        <translation>Could not add image from %1</translation>
     </message>
 </context>
 <context>
@@ -112,12 +110,12 @@
     <message>
         <source>// write code</source>
         <extracomment>Write code placeholder</extracomment>
-        <translation type="vanished">// код</translation>
+        <translation type="vanished">// write code</translation>
     </message>
     <message>
         <source>CODE</source>
         <extracomment>Code text on the code node</extracomment>
-        <translation type="vanished">КОД</translation>
+        <translation type="vanished">CODE</translation>
     </message>
     <message>
         <location
@@ -126,7 +124,7 @@
             />
         <source>// write code</source>
         <comment>Write code placeholder</comment>
-        <translation>// код</translation>
+        <translation>// write code</translation>
     </message>
     <message>
         <location
@@ -135,7 +133,7 @@
             />
         <source>CODE</source>
         <comment>Code text on the code node</comment>
-        <translation type="unfinished">КОД</translation>
+        <translation>CODE</translation>
     </message>
 </context>
 <context>
@@ -143,27 +141,27 @@
     <message>
         <source>ADD</source>
         <extracomment>Add node text</extracomment>
-        <translation type="vanished">ДОБАВИТЬ</translation>
+        <translation type="vanished">ADD</translation>
     </message>
     <message>
         <source>Text</source>
         <extracomment>Append text button</extracomment>
-        <translation type="vanished">Текст</translation>
+        <translation type="vanished">Text</translation>
     </message>
     <message>
         <source>Image</source>
         <extracomment>Append image button</extracomment>
-        <translation type="vanished">Изображение</translation>
+        <translation type="vanished">Image</translation>
     </message>
     <message>
         <source>Code</source>
         <extracomment>Append code button</extracomment>
-        <translation type="vanished">Код</translation>
+        <translation type="vanished">Code</translation>
     </message>
     <message>
         <source>Save</source>
         <extracomment>Save note button</extracomment>
-        <translation type="vanished">Сохранить</translation>
+        <translation type="vanished">Save</translation>
     </message>
     <message>
         <location
@@ -172,7 +170,7 @@
             />
         <source>ADD</source>
         <comment>Add node text</comment>
-        <translation type="unfinished">ДОБАВИТЬ</translation>
+        <translation>ADD</translation>
     </message>
     <message>
         <location
@@ -181,7 +179,7 @@
             />
         <source>Text</source>
         <comment>Append text button</comment>
-        <translation type="unfinished">Текст</translation>
+        <translation>Text</translation>
     </message>
     <message>
         <location
@@ -190,7 +188,7 @@
             />
         <source>Image</source>
         <comment>Append image button</comment>
-        <translation type="unfinished">Изображение</translation>
+        <translation>Image</translation>
     </message>
     <message>
         <location
@@ -199,7 +197,7 @@
             />
         <source>Code</source>
         <comment>Append code button</comment>
-        <translation type="unfinished">Код</translation>
+        <translation>Code</translation>
     </message>
     <message>
         <location
@@ -208,7 +206,7 @@
             />
         <source>Save</source>
         <comment>Save note button</comment>
-        <translation type="unfinished">Сохранить</translation>
+        <translation>Save</translation>
     </message>
 </context>
 <context>
@@ -216,12 +214,12 @@
     <message>
         <source>+ Add Above</source>
         <extracomment>Add root above button</extracomment>
-        <translation type="vanished">+ Добавить выше</translation>
+        <translation type="vanished">+ Add Above</translation>
     </message>
     <message>
         <source>+ Add Below</source>
         <extracomment>Add root below button</extracomment>
-        <translation type="vanished">+ Добавить ниже</translation>
+        <translation type="vanished">+ Add Below</translation>
     </message>
     <message>
         <location
@@ -230,7 +228,7 @@
             />
         <source>+ Add Above</source>
         <comment>Add root above button</comment>
-        <translation type="unfinished">+ Добавить выше</translation>
+        <translation>+ Add Above</translation>
     </message>
     <message>
         <location
@@ -239,7 +237,7 @@
             />
         <source>+ Add Below</source>
         <comment>Add root below button</comment>
-        <translation type="unfinished">+ Добавить ниже</translation>
+        <translation>+ Add Below</translation>
     </message>
 </context>
 <context>
@@ -247,7 +245,7 @@
     <message>
         <source>Untitled</source>
         <extracomment>Note title placeholder</extracomment>
-        <translation type="vanished">Без названия</translation>
+        <translation type="vanished">Untitled</translation>
     </message>
     <message>
         <location
@@ -256,7 +254,7 @@
             />
         <source>Untitled</source>
         <comment>Note title placeholder</comment>
-        <translation type="unfinished">Без названия</translation>
+        <translation>Untitled</translation>
     </message>
 </context>
 <context>
@@ -264,7 +262,7 @@
     <message>
         <source>Type here...</source>
         <extracomment>Placeholder for the text block</extracomment>
-        <translation type="vanished">Введите текст...</translation>
+        <translation type="vanished">Type here...</translation>
     </message>
     <message>
         <location
@@ -273,7 +271,7 @@
             />
         <source>Type here...</source>
         <comment>Placeholder for the text block</comment>
-        <translation type="unfinished">Введите текст...</translation>
+        <translation>Type here...</translation>
     </message>
 </context>
 <context>
@@ -281,24 +279,24 @@
     <message>
         <source>No note selected</source>
         <extracomment>No note selected empty state</extracomment>
-        <translation type="vanished">Заметка не выбрана</translation>
+        <translation type="vanished">No note selected</translation>
     </message>
     <message>
         <source>New note</source>
         <extracomment>Create note empty state</extracomment>
-        <translation type="vanished">Новая заметка</translation>
+        <translation type="vanished">New note</translation>
     </message>
     <message>
         <location filename="../src/qml/pages/EmptyState.qml" line="42" />
         <source>No note selected</source>
         <comment>No note selected empty state</comment>
-        <translation type="unfinished">Заметка не выбрана</translation>
+        <translation>No note selected</translation>
     </message>
     <message>
         <location filename="../src/qml/pages/EmptyState.qml" line="47" />
         <source>New note</source>
         <comment>Create note empty state</comment>
-        <translation type="unfinished">Новая заметка</translation>
+        <translation>New note</translation>
     </message>
 </context>
 <context>
@@ -310,7 +308,7 @@
             />
         <source>LANGUAGE</source>
         <comment>Language section title</comment>
-        <translation>ЯЗЫК</translation>
+        <translation>LANGUAGE</translation>
     </message>
     <message>
         <location
@@ -319,7 +317,7 @@
             />
         <source>Interface Language</source>
         <comment>Interface language title</comment>
-        <translation>Язык интерфейса</translation>
+        <translation>Interface Language</translation>
     </message>
     <message>
         <location
@@ -328,7 +326,7 @@
             />
         <source>Choose the display language</source>
         <comment>Interface language description</comment>
-        <translation>Выберите язык интерфейса</translation>
+        <translation>Choose the display language</translation>
     </message>
 </context>
 <context>
@@ -336,12 +334,12 @@
     <message>
         <location filename="../src/qml/MainWindow.qml" line="41" />
         <source>Error saving note</source>
-        <translation>Ошибка при сохранении заметки</translation>
+        <translation>Error saving note</translation>
     </message>
     <message>
         <location filename="../src/qml/MainWindow.qml" line="42" />
         <source>Could not save note</source>
-        <translation>Не удалось сохранить заметку</translation>
+        <translation>Could not save note</translation>
     </message>
 </context>
 <context>
@@ -349,12 +347,12 @@
     <message>
         <source>Untitled</source>
         <extracomment>Note title placeholder</extracomment>
-        <translation type="vanished">Без названия</translation>
+        <translation type="vanished">Untitled</translation>
     </message>
     <message>
         <source>blocks</source>
         <extracomment>blocks count suffix</extracomment>
-        <translation type="vanished">блок(-ов)</translation>
+        <translation type="vanished">blocks</translation>
     </message>
     <message>
         <location
@@ -363,7 +361,7 @@
             />
         <source>Untitled</source>
         <comment>Note title placeholder</comment>
-        <translation type="unfinished">Без названия</translation>
+        <translation>Untitled</translation>
     </message>
     <message>
         <location
@@ -372,15 +370,15 @@
             />
         <source>blocks</source>
         <comment>blocks count suffix</comment>
-        <translation type="unfinished">блок(-ов)</translation>
+        <translation>blocks</translation>
     </message>
 </context>
 <context>
     <name>NotesListHeader</name>
     <message>
-        <source>All Notes</source>
+        <source>All notes</source>
         <extracomment>Sidebar notes list all notes</extracomment>
-        <translation type="vanished">Все заметки</translation>
+        <translation type="vanished">All notes</translation>
     </message>
     <message>
         <location
@@ -389,7 +387,7 @@
             />
         <source>All Notes</source>
         <comment>Sidebar notes list all notes</comment>
-        <translation type="unfinished">Все заметки</translation>
+        <translation>All Notes</translation>
     </message>
 </context>
 <context>
@@ -401,7 +399,7 @@
             />
         <source>Settings</source>
         <comment>Settings page title</comment>
-        <translation>Настройки</translation>
+        <translation>Settings</translation>
     </message>
     <message>
         <location
@@ -410,7 +408,7 @@
             />
         <source>Configure your workspace preferences</source>
         <comment>Settings page subtitle</comment>
-        <translation>Настройте свое рабочее пространство</translation>
+        <translation>Configure your workspace preferences</translation>
     </message>
 </context>
 <context>
@@ -422,7 +420,7 @@
             />
         <source>Settings</source>
         <comment>Sidebar settings button</comment>
-        <translation>Настройки</translation>
+        <translation>Settings</translation>
     </message>
 </context>
 </TS>

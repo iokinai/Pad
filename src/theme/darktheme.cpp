@@ -32,5 +32,6 @@ QString DarkTheme::removeText() const { return QStringLiteral("#e05555"); }
 QString DarkTheme::accentButtonText() const {
   return QStringLiteral("#ffffff");
 }
+Theme::ThemeTag DarkTheme::themeTag() const { return ThemeTag::Dark; }
 
 } // namespace pad
