@@ -35,6 +35,7 @@ public:
 
   LanguageModel *languages();
   Language *currentLanguage();
+  void setCurrentLanguage();
 
   static LanguageController *create(QVector<Language *> &&languages,
                                     QTranslator *translator,

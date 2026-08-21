@@ -36,8 +36,6 @@ int main(int argc, char *argv[]) {
 
   QQmlApplicationEngine engine;
 
-  app.installTranslator(&translator);
-
   pad::LanguageController *languageController = pad::LanguageController::create(
       std::move(languages), &translator, &engine, &locale);
 
@@ -61,6 +59,8 @@ int main(int argc, char *argv[]) {
 
   engine.rootContext()->setContextProperty("superApp", &superApp);
   engine.loadFromModule("PadUi", "MainWindow");
+
+  languageController->setCurrentLanguage();
 
   QObject::connect(
       &engine, &QQmlApplicationEngine::objectCreationFailed, &app,

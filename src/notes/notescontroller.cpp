@@ -13,8 +13,8 @@
 #include <exceptions/invalidfile.hpp>
 #include <notes/notescontroller.hpp>
 #include <notes/notesmodel.hpp>
-#include <pages/editor/codeNode.hpp>
-#include <pages/editor/imageNode.hpp>
+#include <pages/editor/codenode.hpp>
+#include <pages/editor/imagenode.hpp>
 #include <pages/editor/textnode.hpp>
 #include <storage/markup.hpp>
 #include <utils.hpp>

@@ -1,3 +1,4 @@
+#include "languagecontroller.hpp"
 #include <QGuiApplication>
 #include <QVector>
 #include <language/languagecontroller.hpp>
@@ -21,8 +22,12 @@ LanguageController *LanguageController::create(QVector<Language *> &&languages,
   Language *initialLanguage = detectInitialLanguage(*locale, languages);
   auto lc = new LanguageController(std::move(languages), initialLanguage,
                                    translator, engine, locale, parent);
-  lc->setLanguage(initialLanguage);
   return lc;
+}
+
+void LanguageController::setCurrentLanguage() {
+  switchLanguage(_currentLanguage);
+  emit currentLanguageChanged();
 }
 
 Language *LanguageController::detectInitialLanguage(
