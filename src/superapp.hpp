@@ -32,7 +32,7 @@ class SuperApp : public QObject {
   Q_PROPERTY(QString applicationGitHub READ applicationGitHub CONSTANT)
 
 public:
-  SuperApp(Theme *defaultTheme, MainWindow *mainWindow,
+  SuperApp(Theme::ThemeTag defaultTheme, MainWindow *mainWindow,
            NotesController *notesController, const QString &imageProviderPath,
            LanguageController *languageController, QObject *parent = nullptr);
 
