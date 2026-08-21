@@ -131,7 +131,20 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
       MACOSX_BUNDLE TRUE
       WIN32_EXECUTABLE TRUE
   )
+
+  add_link_options(-Wl,-s)
+  add_compile_options(-O2)
 endif()
+
+install(TARGETS ${PROJECT}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
+install(DIRECTORY "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-mingw-dynamic/bin/"
+    DESTINATION bin
+    FILES_MATCHING PATTERN "*.dll"
+)
 
 target_link_libraries(${PROJECT} PRIVATE
   Qt6::Core
