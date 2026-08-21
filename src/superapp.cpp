@@ -5,20 +5,23 @@
 
 namespace pad {
 
-SuperApp::SuperApp(Theme *defaultTheme, MainWindow *mainWindow,
+SuperApp::SuperApp(Theme::ThemeTag defaultTheme, MainWindow *mainWindow,
                    NotesController *notesController,
                    const QString &imageProviderPath,
                    LanguageController *languageController, QObject *parent)
-    : QObject(parent), _theme(defaultTheme), _mainWindow(mainWindow),
-      _notesController(notesController), _imageProviderPath(imageProviderPath),
-      _languageController(languageController) {}
+    : QObject(parent), _mainWindow(mainWindow),
+      _notesController(notesController), _theme(nullptr),
+      _imageProviderPath(imageProviderPath),
+      _languageController(languageController) {
+  setTheme(defaultTheme);
+}
 
 Theme *SuperApp::theme() const { return _theme; }
 
 NotesController *SuperApp::notesController() { return _notesController; }
 
 void SuperApp::setTheme(Theme::ThemeTag themeTag) {
-  if (themeTag == _theme->themeTag())
+  if (_theme && themeTag == _theme->themeTag())
     return;
 
   delete _theme;

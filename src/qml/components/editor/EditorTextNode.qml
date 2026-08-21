@@ -12,6 +12,7 @@ TextArea {
     font.family: superApp.theme.regularFontFamily
     font.weight: Font.Normal
     wrapMode: TextArea.Wrap
+    color: superApp.theme.text
 
     cursorDelegate: Carette {
         cursorVisible: root.cursorVisible

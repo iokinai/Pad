@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
   pad::LanguageController *languageController = pad::LanguageController::create(
       std::move(languages), &translator, &engine, &locale);
 
-  pad::Theme *defaultTheme = new pad::DarkTheme();
+  pad::Theme::ThemeTag defaultTheme = pad::Theme::Dark;
   pad::MainWindow mainWindow{QGuiApplication::primaryScreen()};
   pad::MediaStorage mediaStorage{};
   pad::NotesController notesController{&mediaStorage};
@@ -68,7 +68,6 @@ int main(int argc, char *argv[]) {
 
   auto code = app.exec();
 
-  delete defaultTheme;
   delete languageController;
 
   return code;
