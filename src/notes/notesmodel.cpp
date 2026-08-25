@@ -22,7 +22,15 @@ QHash<int, QByteArray> NotesModel::roleNames() const {
   return {{Roles::NoteRole, QByteArrayLiteral("note")}};
 }
 
-void NotesModel::pushNote(Note *note) {
+void NotesModel::pushNoteFront(Note *note) {
+  beginInsertRows({}, 0, 0);
+  _notes.push_front(note);
+  endInsertRows();
+
+  emit noteAdded();
+}
+
+void NotesModel::pushNoteBack(Note *note) {
   beginInsertRows({}, _notes.size(), _notes.size());
   _notes.push_back(note);
   endInsertRows();
@@ -30,12 +38,12 @@ void NotesModel::pushNote(Note *note) {
   emit noteAdded();
 }
 
-void NotesModel::pushNotes(QVector<Note *> &&notes) {
-  beginInsertRows({}, _notes.size(), _notes.size() + notes.size() - 1);
-  _notes.append(std::move(notes));
-  endInsertRows();
+// void NotesModel::pushNotes(QVector<Note *> &&notes) {
+//   beginInsertRows({}, _notes.size(), _notes.size() + notes.size() - 1);
+//   _notes.append(std::move(notes));
+//   endInsertRows();
 
-  emit noteAdded();
-}
+//   emit noteAdded();
+// }
 
 } // namespace pad

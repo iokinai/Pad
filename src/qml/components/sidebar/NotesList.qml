@@ -9,6 +9,7 @@ ColumnLayout {
     required property var editor
     required property var notes
     required property int notesCount
+    required property var notesController
 
     signal anyButtonClicked()
 
@@ -32,7 +33,6 @@ ColumnLayout {
         clip: true
 
         delegate: NoteListItem {
-
             visible: header.expanded
             height: 56
             width: parent.width
@@ -44,6 +44,16 @@ ColumnLayout {
                 superApp.mainWindow.currentPage = CxxMainWindow.Editor
                 root.anyButtonClicked()
             }
+        }
+    }
+
+    LoadMoreButton {
+        visible: root.notesController.notesCount != root.notesController.loadedNotesCount
+        Layout.preferredWidth: parent.width
+        Layout.preferredHeight: 30
+        notesController: root.notesController
+        onClicked: {
+            root.notesController.loadNotesAsync()
         }
     }
 }

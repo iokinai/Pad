@@ -49,14 +49,18 @@ class StorageController : public QObject {
   QVector<QPair<QString, QByteArray>>
   loadMediaWithDataFromStorage(const QStringList &mediaPaths);
 
+  QString makeNoteName() const noexcept;
+
 public:
   explicit StorageController(MediaStorage *storage, QObject *parent = nullptr);
 
-  LoadNotesResult loadNotes(const int maxLoadCount);
+  LoadNotesResult loadNotes(const int start = 0,
+                            const int maxLoadCount = INT32_MAX);
 
   void saveNoteToPad(NoteSaveData data);
 
-  NoteSaveData prepareNoteSaveData(Note *note, const QString &path);
+  NoteSaveData prepareNoteSaveData(Note *note,
+                                   QHash<QString, Note *> &notePathMap);
 };
 
 } // namespace pad

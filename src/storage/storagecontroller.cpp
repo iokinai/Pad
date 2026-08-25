@@ -42,8 +42,14 @@ static QByteArray readZipEntryToBuffer(void *reader) {
   return buffer;
 }
 
-LoadNotesResult StorageController::loadNotes(const int maxLoadCount) {
-  QDir dir(_basicPath);
+QString StorageController::makeNoteName() const noexcept {
+  return "Pad-Note-" +
+         QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
+}
+
+LoadNotesResult StorageController::loadNotes(const int start,
+                                             const int maxLoadCount) {
+  QDir dir(_basicPath, {"*.pad"}, QDir::Name | QDir::Reversed);
   LoadNotesResult loadResult;
 
   if (!dir.exists()) {
@@ -51,11 +57,16 @@ LoadNotesResult StorageController::loadNotes(const int maxLoadCount) {
     return {};
   }
 
-  QStringList files = dir.entryList({"*.pad"}, QDir::Files);
+  QStringList files = dir.entryList(QDir::Files);
   loadResult.totalCount = files.size();
+
+  if (start >= files.size()) {
+    return loadResult;
+  }
+
   loadResult.notes.reserve(maxLoadCount);
 
-  for (size_t i = 0; i < qMin(maxLoadCount, files.size()); ++i) {
+  for (size_t i = start; i < qMin(start + maxLoadCount, files.size()); ++i) {
     auto apath = dir.absoluteFilePath(files[i]);
     auto result = loadSingleNote(apath);
 
@@ -225,8 +236,16 @@ void StorageController::saveNoteToPad(NoteSaveData data) {
   }
 }
 
-NoteSaveData StorageController::prepareNoteSaveData(Note *note,
-                                                    const QString &path) {
+NoteSaveData
+StorageController::prepareNoteSaveData(Note *note,
+                                       QHash<QString, Note *> &notePathMap) {
+  QString path = notePathMap.key(note);
+
+  if (path.isEmpty()) {
+    path = makeNoteName() + ".pad";
+    notePathMap.insert(path, note);
+  }
+
   Manifest m(note->createdAt());
   QJsonObject markup = buildJsonForNote(note);
   auto media = extractMediaFromNote(note);
@@ -254,7 +273,7 @@ StorageController::loadMediaWithDataFromStorage(const QStringList &mediaPaths) {
   QVector<QPair<QString, QByteArray>> media;
   for (const auto &path : mediaPaths) {
     QByteArray data = _storage->getMedia(path);
-    media.append({path, data});
+    media.emplaceBack(path, data);
   }
   return media;
 }

@@ -20,12 +20,8 @@ void NotesController::addEmptyNote() {
   auto note =
       new Note("", {}, QDateTime::currentDateTime(), _storage, &_notesModel);
   ++_totalCount;
-  prepareAndPushCreatedNote(note);
+  prepareAndPushCreatedNote(note, true);
   saveNoteAsync(note);
-}
-
-QString NotesController::makeNoteName() {
-  return "Pad-Note-" + utils::randomUuid();
 }
 
 void NotesController::onNoteEdited() {
@@ -37,9 +33,14 @@ void NotesController::onNoteEdited() {
   }
 }
 
-void NotesController::prepareAndPushCreatedNote(Note *note) {
+void NotesController::prepareAndPushCreatedNote(Note *note, bool front) {
   connect(note, &Note::noteEdited, this, &NotesController::onNoteEdited);
-  _notesModel.pushNote(note);
+
+  if (front) {
+    _notesModel.pushNoteFront(note);
+  } else {
+    _notesModel.pushNoteBack(note);
+  }
 }
 
 NotesController::NotesController(MediaStorage *storage,
@@ -60,10 +61,13 @@ NotesModel *NotesController::notes() { return &_notesModel; }
 void NotesController::onNoteAdded() {
   ++_loaded;
   emit notesCountChanged();
+  emit loadedNotesCountChanged();
 }
 
 void NotesController::loadNotesAsync() {
   auto watcher = new QFutureWatcher<LoadNotesResult>();
+
+  setLoadingNotes(true);
 
   connect(watcher, &QFutureWatcher<LoadNotesResult>::finished, this,
           [watcher, this]() {
@@ -73,18 +77,20 @@ void NotesController::loadNotesAsync() {
             for (const auto &result : results.notes) {
               result.loadedNote->setParent(&_notesModel);
               _notePathMap[result.name] = result.loadedNote;
-              prepareAndPushCreatedNote(result.loadedNote);
 
               for (const auto &media : result.medias) {
                 _storage->addMedia(media.first, media.second);
               }
+
+              prepareAndPushCreatedNote(result.loadedNote);
             }
 
+            setLoadingNotes(false);
             watcher->deleteLater();
           });
 
   watcher->setFuture(QtConcurrent::run([this]() {
-    auto results = _storageController->loadNotes(LOAD_FIRST_COUNT);
+    auto results = _storageController->loadNotes(_loaded, LOAD_PACKET_LENGTH);
 
     for (const auto &result : results.notes) {
       if (qApp) {
@@ -96,15 +102,21 @@ void NotesController::loadNotesAsync() {
   }));
 }
 
-void NotesController::saveNoteAsync(Note *note) {
-  QString path = _notePathMap.key(note);
+bool NotesController::loadingNotes() const noexcept { return _loadingNotes; }
 
-  if (path.isEmpty()) {
-    path = makeNoteName() + ".pad";
-    _notePathMap.insert(path, note);
+void NotesController::setLoadingNotes(bool v) noexcept {
+  if (_loadingNotes == v) {
+    return;
   }
 
-  auto saveData = _storageController->prepareNoteSaveData(note, path);
+  _loadingNotes = v;
+  emit loadingNotesChanged();
+}
+
+size_t NotesController::loadedNotesCount() const noexcept { return _loaded; }
+
+void NotesController::saveNoteAsync(Note *note) {
+  auto saveData = _storageController->prepareNoteSaveData(note, _notePathMap);
   note->setHasUnsavedChanges(false);
   _unsavedNotes.remove(note);
 
