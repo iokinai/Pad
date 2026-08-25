@@ -47,8 +47,9 @@ qt_add_executable(${PROJECT}
   src/storage/markup.cpp
   src/storage/mediastorage.hpp
   src/storage/mediastorage.cpp
+  src/storage/storagecontroller.hpp
+  src/storage/storagecontroller.cpp
   src/exceptions/invalidmanifest.hpp
-  src/exceptions/invalidmanifest.cpp
   src/exceptions/invalidjson.hpp
   src/language/languagecontroller.hpp
   src/language/languagecontroller.cpp

@@ -7,7 +7,7 @@ namespace pad {
 
 class InvalidJsonNodeType : public std::runtime_error {
 public:
-  InvalidJsonNodeType(const QString &nodeType)
+  inline InvalidJsonNodeType(const QString &nodeType)
       : std::runtime_error("Invalid node type: " + nodeType.toStdString()) {}
 };
 
