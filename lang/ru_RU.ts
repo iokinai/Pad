@@ -424,5 +424,25 @@
         <comment>Sidebar settings button</comment>
         <translation>Настройки</translation>
     </message>
+          </context>
+<context>
+    <name>LoadMoreButton</name>
+    <message>
+        <location
+                filename=".../src/qml/components/sidebar/LoadMoreButton.qml"
+                line="9"
+            />
+        <source>Loading...</source>
+        <translation>Загрузка...</translation>
+    </message>
+
+    <message>
+        <location
+                filename=".../src/qml/components/sidebar/LoadMoreButton.qml"
+                line="9"
+            />
+        <source>Load more</source>
+        <translation>Загрузить еще</translation>
+    </message>
 </context>
 </TS>

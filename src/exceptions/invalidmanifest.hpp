@@ -1,17 +1,12 @@
 #pragma once
 
-#include <exception>
-#include <string>
+#include <stdexcept>
 
 namespace pad {
 
-class InvalidManifest : public std::exception {
+class InvalidManifest : public std::runtime_error {
 public:
-  InvalidManifest();
-  const char *what() const noexcept override;
-
-private:
-  std::string _message;
+  inline InvalidManifest() : std::runtime_error("Invalid manifest read") {}
 };
 
 } // namespace pad

@@ -27,8 +27,9 @@ public:
   QHash<int, QByteArray> roleNames() const override;
 
 public:
-  void pushNote(Note *notes);
-  void pushNotes(QVector<Note *> &&notes);
+  void pushNoteFront(Note *note);
+  void pushNoteBack(Note *note);
+  // void pushNotes(QVector<Note *> &&notes);
 
 signals:
   void noteAdded();

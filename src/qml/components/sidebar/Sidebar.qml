@@ -9,6 +9,8 @@ Rectangle {
     required property var editor
     required property var mainWindow
 
+    property var notesController: superApp.notesController
+
     color: superApp.theme.sidebar
     border.width: 1
     border.color: superApp.theme.border
@@ -19,7 +21,7 @@ Rectangle {
         anchors.fill: parent
 
         SidebarHeader {
-            notesController: superApp.notesController
+            notesController: root.notesController
 
             Layout.preferredWidth: root.width
             Layout.topMargin: 18
@@ -38,9 +40,10 @@ Rectangle {
             id: notesList
             Layout.preferredWidth: root.width
             Layout.fillHeight: true
-            notes: superApp.notesController.notes
-            notesCount: superApp.notesController.notesCount
+            notes: root.notesController.notes
+            notesCount: root.notesController.notesCount
             editor: root.editor
+            notesController: root.notesController
             Layout.topMargin: 10
             Layout.bottomMargin: 10
             Layout.leftMargin: 8

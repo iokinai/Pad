@@ -423,4 +423,24 @@
         <translation>Settings</translation>
     </message>
 </context>
+<context>
+    <name>LoadMoreButton</name>
+    <message>
+        <location
+                filename=".../src/qml/components/sidebar/LoadMoreButton.qml"
+                line="9"
+            />
+        <source>Loading...</source>
+        <translation>Loading...</translation>
+    </message>
+
+    <message>
+        <location
+                filename=".../src/qml/components/sidebar/LoadMoreButton.qml"
+                line="9"
+            />
+        <source>Load more</source>
+        <translation>Load more</translation>
+    </message>
+</context>
 </TS>

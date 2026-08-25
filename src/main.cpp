@@ -9,6 +9,7 @@
 #include <padimageprovider.hpp>
 #include <pages/editor/node.hpp>
 #include <storage/mediastorage.hpp>
+#include <storage/storagecontroller.hpp>
 #include <superapp.hpp>
 #include <theme/darktheme.hpp>
 
@@ -42,7 +43,8 @@ int main(int argc, char *argv[]) {
   pad::Theme::ThemeTag defaultTheme = pad::Theme::Dark;
   pad::MainWindow mainWindow{QGuiApplication::primaryScreen()};
   pad::MediaStorage mediaStorage{};
-  pad::NotesController notesController{&mediaStorage};
+  pad::StorageController storageController{&mediaStorage};
+  pad::NotesController notesController{&mediaStorage, &storageController};
   pad::PadImageProvider *imageProvider =
       new pad::PadImageProvider{&mediaStorage};
 

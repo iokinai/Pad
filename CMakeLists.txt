@@ -47,8 +47,9 @@ qt_add_executable(${PROJECT}
   src/storage/markup.cpp
   src/storage/mediastorage.hpp
   src/storage/mediastorage.cpp
+  src/storage/storagecontroller.hpp
+  src/storage/storagecontroller.cpp
   src/exceptions/invalidmanifest.hpp
-  src/exceptions/invalidmanifest.cpp
   src/exceptions/invalidjson.hpp
   src/language/languagecontroller.hpp
   src/language/languagecontroller.cpp
@@ -95,6 +96,7 @@ qt_add_qml_module(${PROJECT}
     src/qml/components/sidebar/NotesList.qml
     src/qml/components/sidebar/NoteListItem.qml
     src/qml/components/sidebar/SidebarButton.qml
+    src/qml/components/sidebar/LoadMoreButton.qml
     src/qml/components/settings/SettingsHeader.qml
     src/qml/components/settings/AppearanceSection.qml
     src/qml/components/settings/LanguageSection.qml

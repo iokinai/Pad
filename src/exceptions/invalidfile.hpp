@@ -5,6 +5,6 @@
 
 class InvalidFile : public std::runtime_error {
 public:
-  InvalidFile(const QString &message)
+  inline InvalidFile(const QString &message)
       : std::runtime_error(message.toStdString()) {}
 };
