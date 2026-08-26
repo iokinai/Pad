@@ -1,3 +1,4 @@
+#include "search/notescache.hpp"
 #include <QFontDatabase>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -45,6 +46,9 @@ int main(int argc, char *argv[]) {
   pad::MediaStorage mediaStorage{};
   pad::StorageController storageController{&mediaStorage};
   pad::NotesController notesController{&mediaStorage, &storageController};
+  pad::NotesCache notesCache{&storageController};
+  QObject::connect(&notesController, &pad::NotesController::notesCountChanged,
+                   &notesCache, &pad::NotesCache::clearCache);
   pad::PadImageProvider *imageProvider =
       new pad::PadImageProvider{&mediaStorage};
 

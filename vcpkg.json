@@ -1,7 +1,29 @@
 {
   "name": "pad",
-  "version": "1.0",
   "dependencies": [
-    "minizip-ng"
+    "minizip-ng",
+    {
+      "name": "qtbase",
+      "default-features": false,
+      "features": ["concurrent", "gui"],
+      "platform": "!windows"
+    },
+    {
+      "name": "qtbase",
+      "default-features": false,
+      "features": ["concurrent", "gui", "windeployqt"],
+      "platform": "windows"
+    },
+    "qtdeclarative",
+    {
+      "name": "qttools",
+      "default-features": false,
+      "features": ["linguist"]
+    },
+    {
+      "name": "qcoro",
+      "default-features": false,
+      "features": ["qml", "quick"]
+    }
   ]
 }

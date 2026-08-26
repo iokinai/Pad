@@ -16,7 +16,6 @@ class Note : public QAbstractListModel {
   QString _title;
   QVector<Node *> _nodes;
   QDateTime _createdAt;
-  MediaStorage *_storage;
   bool _hasUnsavedChanges = false;
 
   void connectNode(Node *node);
@@ -35,7 +34,7 @@ public:
   enum Roles { NodeRole = Qt::UserRole + 1 };
 
   Note(const QString &title, QVector<Node *> &&nodes, QDateTime createdAt,
-       MediaStorage *storage, QObject *parent = nullptr);
+       QObject *parent = nullptr);
 
   virtual int rowCount(const QModelIndex &parent = {}) const override;
   virtual QVariant data(const QModelIndex &index, int role) const override;
@@ -61,7 +60,6 @@ signals:
   void titleChanged();
   void nodesCountChanged();
   void noteEdited();
-  void addImageError(const QString &path);
   void hasUnsavedChangesChanged();
 
 private slots:

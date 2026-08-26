@@ -9,12 +9,14 @@ Popup {
     required property var note
     required property var currentNode
     required property bool above
+    required property var notesController
 
     OpenImageDialog {
         id: openImageDialog
         note: root.note
         node: root.currentNode
         above: root.above
+        notesController: root.notesController
     }
 
     signal anyButtonClicked()

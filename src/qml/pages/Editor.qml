@@ -8,6 +8,7 @@ ColumnLayout {
     id: root
 
     required property var editor
+    property var notesController: superApp.notesController
     property var note: root.editor.currentNote
 
     MessageDialog {
@@ -16,7 +17,7 @@ ColumnLayout {
     }
 
     Connections {
-        target: root.note
+        target: root.notesController
 
         function onAddImageError(path) {
             errorDialog.title = qsTr("Error adding image")
@@ -29,7 +30,7 @@ ColumnLayout {
         sequences:  ["Ctrl+S", "StandardKey.Save"]
         enabled: root.note.hasUnsavedChanges
         onActivated: {
-            superApp.notesController.saveNoteAsync(root.note)
+            superApp.notesController.qmlSaveNoteAsync(root.note)
         }
     }
 
@@ -94,6 +95,7 @@ ColumnLayout {
                     onLoaded: {
                         item.nodeValue = node
                         item.noteValue = root.note
+                        item.notesControllerValue = root.notesController
                     }
                 }
             }
@@ -106,9 +108,11 @@ ColumnLayout {
                     width: parent.width
                     property var noteValue
                     property var nodeValue
+                    property var notesControllerValue
 
                     note: baseNode.noteValue
                     currentNode: baseNode.nodeValue
+                    notesController: baseNode.notesControllerValue
 
                     EditorTextNode {
                         node: baseNode.nodeValue
@@ -125,9 +129,11 @@ ColumnLayout {
                     width: parent.width
                     property var noteValue
                     property var nodeValue
+                    property var notesControllerValue
 
                     note: baseNode.noteValue
                     currentNode: baseNode.nodeValue
+                    notesController: baseNode.notesControllerValue
 
                     EditorImageNode {
                         node: baseNode.nodeValue
@@ -144,9 +150,11 @@ ColumnLayout {
                     width: parent.width
                     property var noteValue
                     property var nodeValue
+                    property var notesControllerValue
 
                     note: baseNode.noteValue
                     currentNode: baseNode.nodeValue
+                    notesController: baseNode.notesControllerValue
 
                     EditorCodeNode {
                         node: baseNode.nodeValue

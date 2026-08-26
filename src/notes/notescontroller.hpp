@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QCoro/QCoroQmlTask>
+#include <QCoro/QCoroTask>
 #include <QObject>
 #include <QStandardPaths>
 #include <notes/notesmodel.hpp>
@@ -10,6 +12,7 @@
 
 namespace pad {
 
+// REFACTOR: move to cache
 class NotesController : public QObject {
   Q_OBJECT
 
@@ -43,8 +46,12 @@ public:
   size_t notesCount() const;
   NotesModel *notes();
   Q_INVOKABLE void addEmptyNote();
-  Q_INVOKABLE void saveNoteAsync(Note *note);
-  Q_INVOKABLE void loadNotesAsync();
+  QCoro::Task<void> saveNoteAsync(Note *note);
+  QCoro::Task<void> loadNotesAsync();
+
+  Q_INVOKABLE QCoro::QmlTask qmlSaveNoteAsync(Note *note);
+  Q_INVOKABLE QCoro::QmlTask qmlLoadNotesAsync();
+  Q_INVOKABLE QString loadImageFromSystem(const QString &systemPath);
   bool loadingNotes() const noexcept;
   size_t loadedNotesCount() const noexcept;
 
@@ -53,6 +60,7 @@ signals:
   void couldNotSaveNote();
   void loadingNotesChanged();
   void loadedNotesCountChanged();
+  void addImageError(const QString &path);
 
 private slots:
   void onNoteAdded();

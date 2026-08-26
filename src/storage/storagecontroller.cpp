@@ -9,8 +9,10 @@
 #include <minizip-ng/mz_zip.h>
 #include <minizip-ng/mz_zip_rw.h>
 
+#include <QCoro/QCoroFuture>
 #include <QDir>
 #include <QStandardPaths>
+#include <QtConcurrent/QtConcurrent>
 
 namespace pad {
 
@@ -148,7 +150,7 @@ Note *StorageController::loadAndParseContent(void *reader,
     throw InvalidFile("markup.json is not a valid JSON object");
   }
 
-  return buildNoteFromJson(doc.object(), manifest, _storage);
+  return buildNoteFromJson(doc.object(), manifest);
 }
 
 QVector<QPair<QString, QByteArray>>
@@ -276,6 +278,25 @@ StorageController::loadMediaWithDataFromStorage(const QStringList &mediaPaths) {
     media.emplaceBack(path, data);
   }
   return media;
+}
+
+QCoro::Task<LoadNotesResult>
+StorageController::loadNotesAsync(const int start, const int maxLoadCount) {
+  co_return co_await QtConcurrent::run([this, start, maxLoadCount]() {
+    auto loadedNotes = loadNotes(start, maxLoadCount);
+
+    for (const auto &note : loadedNotes.notes) {
+      if (qApp) {
+        note.loadedNote->moveToThread(qApp->thread());
+      }
+    }
+
+    return loadedNotes;
+  });
+}
+
+QCoro::Task<void> StorageController::saveNoteAsync(NoteSaveData data) {
+  co_await QtConcurrent::run([this, data]() { return saveNoteToPad(data); });
 }
 
 } // namespace pad

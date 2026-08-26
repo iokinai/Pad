@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QCoro/QCoroTask>
 #include <QJsonObject>
 #include <QStandardPaths>
 #include <QString>
@@ -7,6 +8,8 @@
 #include <storage/manifest.hpp>
 
 namespace pad {
+
+// REFACTOR: move async I/O operations here with QCoro
 
 struct LoadNoteResult {
   Note *loadedNote;
@@ -61,6 +64,11 @@ public:
 
   NoteSaveData prepareNoteSaveData(Note *note,
                                    QHash<QString, Note *> &notePathMap);
+
+  QCoro::Task<LoadNotesResult>
+  loadNotesAsync(const int start = 0, const int maxLoadCount = INT32_MAX);
+
+  QCoro::Task<void> saveNoteAsync(NoteSaveData data);
 };
 
 } // namespace pad

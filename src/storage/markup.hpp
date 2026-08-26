@@ -19,7 +19,6 @@ QJsonArray buildJsonForNoteNodes(Note *note);
 
 QJsonObject buildJsonForNote(Note *note);
 
-Note *buildNoteFromJson(const QJsonObject &json, const Manifest &manifest,
-                        MediaStorage *storage);
+Note *buildNoteFromJson(const QJsonObject &json, const Manifest &manifest);
 
 } // namespace pad

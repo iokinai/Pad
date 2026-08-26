@@ -8,6 +8,7 @@ Item {
     required property var currentNode
     required property bool above
     required property bool hovered
+    required property var notesController
 
     property bool isMenuOpened: false
     property bool buttonHovered: false
@@ -52,6 +53,7 @@ Item {
         note: root.note
         currentNode: root.currentNode
         above: root.above
+        notesController: root.notesController
 
         onAnyButtonClicked: {
             insertTrigger.isOpen = false

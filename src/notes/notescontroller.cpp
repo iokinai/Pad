@@ -1,3 +1,4 @@
+#include <QCoro/QCoroQml>
 #include <QDateTime>
 #include <QDir>
 #include <QFuture>
@@ -17,8 +18,7 @@
 namespace pad {
 
 void NotesController::addEmptyNote() {
-  auto note =
-      new Note("", {}, QDateTime::currentDateTime(), _storage, &_notesModel);
+  auto note = new Note("", {}, QDateTime::currentDateTime(), &_notesModel);
   ++_totalCount;
   prepareAndPushCreatedNote(note, true);
   saveNoteAsync(note);
@@ -64,43 +64,47 @@ void NotesController::onNoteAdded() {
   emit loadedNotesCountChanged();
 }
 
-void NotesController::loadNotesAsync() {
-  auto watcher = new QFutureWatcher<LoadNotesResult>();
-
+QCoro::Task<void> NotesController::loadNotesAsync() {
   setLoadingNotes(true);
 
-  connect(watcher, &QFutureWatcher<LoadNotesResult>::finished, this,
-          [watcher, this]() {
-            auto results = watcher->result();
-            _totalCount = results.totalCount;
+  auto results =
+      co_await _storageController->loadNotesAsync(_loaded, LOAD_PACKET_LENGTH);
 
-            for (const auto &result : results.notes) {
-              result.loadedNote->setParent(&_notesModel);
-              _notePathMap[result.name] = result.loadedNote;
+  _totalCount = results.totalCount;
 
-              for (const auto &media : result.medias) {
-                _storage->addMedia(media.first, media.second);
-              }
+  for (const auto &result : results.notes) {
+    result.loadedNote->setParent(&_notesModel);
+    _notePathMap[result.name] = result.loadedNote;
 
-              prepareAndPushCreatedNote(result.loadedNote);
-            }
-
-            setLoadingNotes(false);
-            watcher->deleteLater();
-          });
-
-  watcher->setFuture(QtConcurrent::run([this]() {
-    auto results = _storageController->loadNotes(_loaded, LOAD_PACKET_LENGTH);
-
-    for (const auto &result : results.notes) {
-      if (qApp) {
-        result.loadedNote->moveToThread(qApp->thread());
-      }
+    for (const auto &media : result.medias) {
+      _storage->addMedia(media.first, media.second);
     }
 
-    return results;
-  }));
+    prepareAndPushCreatedNote(result.loadedNote);
+  }
+
+  setLoadingNotes(false);
 }
+
+QCoro::Task<void> NotesController::saveNoteAsync(Note *note) {
+  auto saveData = _storageController->prepareNoteSaveData(note, _notePathMap);
+  note->setHasUnsavedChanges(false);
+  _unsavedNotes.remove(note);
+
+  try {
+    co_await _storageController->saveNoteAsync(saveData);
+  } catch (...) {
+    note->setHasUnsavedChanges(true);
+    _unsavedNotes.insert(note);
+    emit couldNotSaveNote();
+  }
+}
+
+QCoro::QmlTask NotesController::qmlSaveNoteAsync(Note *note) {
+  return saveNoteAsync(note);
+}
+
+QCoro::QmlTask NotesController::qmlLoadNotesAsync() { return loadNotesAsync(); }
 
 bool NotesController::loadingNotes() const noexcept { return _loadingNotes; }
 
@@ -115,34 +119,14 @@ void NotesController::setLoadingNotes(bool v) noexcept {
 
 size_t NotesController::loadedNotesCount() const noexcept { return _loaded; }
 
-void NotesController::saveNoteAsync(Note *note) {
-  auto saveData = _storageController->prepareNoteSaveData(note, _notePathMap);
-  note->setHasUnsavedChanges(false);
-  _unsavedNotes.remove(note);
+QString NotesController::loadImageFromSystem(const QString &systemPath) {
+  auto name = _storage->addMediaFromSystem(systemPath);
 
-  auto *watcher = new QFutureWatcher<bool>();
+  if (name.isEmpty()) {
+    emit addImageError(systemPath);
+  }
 
-  connect(watcher, &QFutureWatcher<bool>::finished, this,
-          [watcher, note, this]() {
-            auto result = watcher->result();
-
-            if (!result) {
-              note->setHasUnsavedChanges(true);
-              _unsavedNotes.insert(note);
-              emit couldNotSaveNote();
-            }
-
-            watcher->deleteLater();
-          });
-
-  watcher->setFuture(QtConcurrent::run([this, saveData]() {
-    try {
-      _storageController->saveNoteToPad(saveData);
-      return true;
-    } catch (...) {
-      return false;
-    }
-  }));
+  return name;
 }
 
 } // namespace pad

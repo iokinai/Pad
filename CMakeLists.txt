@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.20)
 set(PROJECT Pad)
 project(${PROJECT} VERSION 1.0.0)
 
@@ -10,6 +10,7 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick LinguistTools)
 find_package(minizip-ng CONFIG REQUIRED)
+find_package(QCoro6 REQUIRED COMPONENTS Core Qml)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
@@ -57,6 +58,8 @@ qt_add_executable(${PROJECT}
   src/language/language.cpp
   src/language/languagemodel.hpp
   src/language/languagemodel.cpp
+  src/search/notescache.hpp
+  src/search/notescache.cpp
   src/padimageprovider.hpp
   src/padimageprovider.cpp
   src/utils.hpp
@@ -138,21 +141,13 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_compile_options(-O2)
 endif()
 
-install(TARGETS ${PROJECT}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-)
-
-install(DIRECTORY "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-mingw-dynamic/bin/"
-    DESTINATION bin
-    FILES_MATCHING PATTERN "*.dll"
-)
-
 target_link_libraries(${PROJECT} PRIVATE
   Qt6::Core
   Qt6::Gui
   Qt6::Qml
   Qt6::Quick
+  QCoro6::Core
+  QCoro6::Qml
   MINIZIP::minizip-ng
 )
 
@@ -160,3 +155,35 @@ target_include_directories(${PROJECT} PRIVATE
   src
   ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+qt_finalize_target(${PROJECT})
+
+install(TARGETS ${PROJECT}
+  RUNTIME DESTINATION bin
+  BUNDLE DESTINATION .
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
+install(
+  DIRECTORY
+    "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/"
+  DESTINATION "bin"
+  FILES_MATCHING
+    PATTERN "*.dll"
+    PATTERN "Qt*.dll" EXCLUDE
+)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  install(
+  DIRECTORY
+    "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/bin/"
+  DESTINATION "bin"
+  FILES_MATCHING
+    PATTERN "*.dll"
+    PATTERN "Qt*.dll" EXCLUDE
+)
+endif()
+
+qt_generate_deploy_qml_app_script(TARGET ${PROJECT} OUTPUT_SCRIPT deploy_script)
+install(SCRIPT ${deploy_script})
