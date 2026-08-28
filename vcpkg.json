@@ -11,7 +11,7 @@
     {
       "name": "qtbase",
       "default-features": false,
-      "features": ["concurrent", "gui", "windeployqt"],
+      "features": ["concurrent", "gui", "windeployqt", "jpeg"],
       "platform": "windows"
     },
     "qtdeclarative",
@@ -24,6 +24,7 @@
       "name": "qcoro",
       "default-features": false,
       "features": ["qml", "quick"]
-    }
+    },
+    "qtimageformats"
   ]
 }

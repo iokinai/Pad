@@ -6,9 +6,7 @@
 #include <QStandardPaths>
 #include <notes/notesmodel.hpp>
 #include <pages/editor/note.hpp>
-#include <storage/manifest.hpp>
-#include <storage/mediastorage.hpp>
-#include <storage/storagecontroller.hpp>
+#include <storage/notescache.hpp>
 
 namespace pad {
 
@@ -21,10 +19,9 @@ class NotesController : public QObject {
   size_t _loaded = 0;
   size_t _totalCount = 0;
   NotesModel _notesModel;
-  MediaStorage *_storage;
   QHash<QString, Note *> _notePathMap;
   QSet<Note *> _unsavedNotes;
-  StorageController *_storageController;
+  NotesCache *_cache;
   bool _loadingNotes = false;
 
   Q_PROPERTY(size_t notesCount READ notesCount NOTIFY notesCountChanged)
@@ -41,8 +38,7 @@ class NotesController : public QObject {
   void setLoadingNotes(bool v) noexcept;
 
 public:
-  NotesController(MediaStorage *storage, StorageController *storageController,
-                  QObject *parent = nullptr);
+  NotesController(NotesCache *cache, QObject *parent = nullptr);
   size_t notesCount() const;
   NotesModel *notes();
   Q_INVOKABLE void addEmptyNote();
@@ -65,6 +61,8 @@ signals:
 private slots:
   void onNoteAdded();
   void onNoteEdited();
+  void onFullNoteLoaded(QVector<Note *> notes);
+  void onTotalCountChanged();
 };
 
 } // namespace pad

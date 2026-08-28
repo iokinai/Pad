@@ -1,4 +1,3 @@
-#include "search/notescache.hpp"
 #include <QFontDatabase>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -10,6 +9,7 @@
 #include <padimageprovider.hpp>
 #include <pages/editor/node.hpp>
 #include <storage/mediastorage.hpp>
+#include <storage/notescache.hpp>
 #include <storage/storagecontroller.hpp>
 #include <superapp.hpp>
 #include <theme/darktheme.hpp>
@@ -45,10 +45,8 @@ int main(int argc, char *argv[]) {
   pad::MainWindow mainWindow{QGuiApplication::primaryScreen()};
   pad::MediaStorage mediaStorage{};
   pad::StorageController storageController{&mediaStorage};
-  pad::NotesController notesController{&mediaStorage, &storageController};
   pad::NotesCache notesCache{&storageController};
-  QObject::connect(&notesController, &pad::NotesController::notesCountChanged,
-                   &notesCache, &pad::NotesCache::clearCache);
+  pad::NotesController notesController{&notesCache};
   pad::PadImageProvider *imageProvider =
       new pad::PadImageProvider{&mediaStorage};
 

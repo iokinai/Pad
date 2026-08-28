@@ -13,15 +13,15 @@
 #include <pages/editor/imagenode.hpp>
 #include <pages/editor/textnode.hpp>
 #include <storage/markup.hpp>
+#include <storage/notescache.hpp>
 #include <utils.hpp>
 
 namespace pad {
 
 void NotesController::addEmptyNote() {
-  auto note = new Note("", {}, QDateTime::currentDateTime(), &_notesModel);
-  ++_totalCount;
-  prepareAndPushCreatedNote(note, true);
-  saveNoteAsync(note);
+  auto note = _cache->addEmptyNote();
+  _unsavedNotes.insert(note);
+  note->setHasUnsavedChanges(true);
 }
 
 void NotesController::onNoteEdited() {
@@ -43,15 +43,32 @@ void NotesController::prepareAndPushCreatedNote(Note *note, bool front) {
   }
 }
 
-NotesController::NotesController(MediaStorage *storage,
-                                 StorageController *storageController,
-                                 QObject *parent)
-    : QObject(parent), _storageController(storageController), _notesModel({}),
-      _totalCount(0), _loaded(0), _storage(storage) {
+NotesController::NotesController(NotesCache *cache, QObject *parent)
+    : QObject(parent), _cache(cache), _notesModel({}), _totalCount(0),
+      _loaded(0) {
   connect(&_notesModel, &NotesModel::noteAdded, this,
           &NotesController::onNoteAdded);
+  connect(_cache, &NotesCache::fullNoteLoaded, this,
+          &NotesController::onFullNoteLoaded);
+  connect(_cache, &NotesCache::totalCountChanged, this,
+          &NotesController::onTotalCountChanged);
+  connect(_cache, &NotesCache::loaded, this, [this]() {
+    _cache->requestFullyLoadedNotesAsync(_loaded, LOAD_PACKET_LENGTH)
+        .then([]() { qDebug() << "result got"; });
+  });
 
-  loadNotesAsync();
+  _cache->loadNotesAsync().then([]() { qDebug() << "requested"; });
+}
+
+void NotesController::onFullNoteLoaded(QVector<Note *> notes) {
+  for (auto *note : notes) {
+    prepareAndPushCreatedNote(note);
+  }
+}
+
+void NotesController::onTotalCountChanged() {
+  _totalCount = _cache->totalCount();
+  emit notesCountChanged();
 }
 
 size_t NotesController::notesCount() const { return _totalCount; }
@@ -67,32 +84,18 @@ void NotesController::onNoteAdded() {
 QCoro::Task<void> NotesController::loadNotesAsync() {
   setLoadingNotes(true);
 
-  auto results =
-      co_await _storageController->loadNotesAsync(_loaded, LOAD_PACKET_LENGTH);
-
-  _totalCount = results.totalCount;
-
-  for (const auto &result : results.notes) {
-    result.loadedNote->setParent(&_notesModel);
-    _notePathMap[result.name] = result.loadedNote;
-
-    for (const auto &media : result.medias) {
-      _storage->addMedia(media.first, media.second);
-    }
-
-    prepareAndPushCreatedNote(result.loadedNote);
-  }
+  co_await _cache->requestFullyLoadedNotesAsync(_loaded, LOAD_PACKET_LENGTH);
 
   setLoadingNotes(false);
 }
 
 QCoro::Task<void> NotesController::saveNoteAsync(Note *note) {
-  auto saveData = _storageController->prepareNoteSaveData(note, _notePathMap);
+
   note->setHasUnsavedChanges(false);
   _unsavedNotes.remove(note);
 
   try {
-    co_await _storageController->saveNoteAsync(saveData);
+    co_await _cache->saveNoteAsync(note);
   } catch (...) {
     note->setHasUnsavedChanges(true);
     _unsavedNotes.insert(note);
@@ -120,7 +123,7 @@ void NotesController::setLoadingNotes(bool v) noexcept {
 size_t NotesController::loadedNotesCount() const noexcept { return _loaded; }
 
 QString NotesController::loadImageFromSystem(const QString &systemPath) {
-  auto name = _storage->addMediaFromSystem(systemPath);
+  auto name = _cache->addMediaFromSystem(systemPath);
 
   if (name.isEmpty()) {
     emit addImageError(systemPath);

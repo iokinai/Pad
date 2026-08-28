@@ -58,8 +58,8 @@ qt_add_executable(${PROJECT}
   src/language/language.cpp
   src/language/languagemodel.hpp
   src/language/languagemodel.cpp
-  src/search/notescache.hpp
-  src/search/notescache.cpp
+  src/storage/notescache.hpp
+  src/storage/notescache.cpp
   src/padimageprovider.hpp
   src/padimageprovider.cpp
   src/utils.hpp

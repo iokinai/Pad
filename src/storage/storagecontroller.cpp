@@ -1,3 +1,4 @@
+#include "storage/loadednote.hpp"
 #include <exceptions/couldnotsavefile.hpp>
 #include <exceptions/invalidfile.hpp>
 #include <storage/manifest.hpp>
@@ -15,6 +16,11 @@
 #include <QtConcurrent/QtConcurrent>
 
 namespace pad {
+
+StorageController::ZipDeleter::~ZipDeleter() {
+  mz_zip_reader_close(r);
+  mz_zip_reader_delete(&r);
+}
 
 StorageController::StorageController(MediaStorage *storage, QObject *parent)
     : QObject(parent), _storage(storage) {}
@@ -44,13 +50,10 @@ static QByteArray readZipEntryToBuffer(void *reader) {
   return buffer;
 }
 
-QString StorageController::makeNoteName() const noexcept {
-  return "Pad-Note-" +
-         QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
-}
-
-LoadNotesResult StorageController::loadNotes(const int start,
-                                             const int maxLoadCount) {
+LoadNotesResult StorageController::loadNotes(
+    std::optional<LoadedNote> (StorageController::*loadSingleNoteDelegate)(
+        const QString &path),
+    const int start, const int maxLoadCount) {
   QDir dir(_basicPath, {"*.pad"}, QDir::Name | QDir::Reversed);
   LoadNotesResult loadResult;
 
@@ -70,12 +73,12 @@ LoadNotesResult StorageController::loadNotes(const int start,
 
   for (size_t i = start; i < qMin(start + maxLoadCount, files.size()); ++i) {
     auto apath = dir.absoluteFilePath(files[i]);
-    auto result = loadSingleNote(apath);
+    auto result = (this->*loadSingleNoteDelegate)(apath);
 
     if (result == std::nullopt)
       continue;
 
-    result->name = files[i];
+    result->path = files[i];
 
     loadResult.notes.emplaceBack(std::move(*result));
   }
@@ -83,30 +86,60 @@ LoadNotesResult StorageController::loadNotes(const int start,
   return loadResult;
 }
 
-std::optional<LoadNoteResult>
-StorageController::loadSingleNote(const QString &path) {
+LoadNotesResult StorageController::loadFullNotes(const int start,
+                                                 const int maxLoadCount) {
+  return loadNotes(&StorageController::loadSingleNoteWithMedia, start,
+                   maxLoadCount);
+}
+
+LoadNotesResult
+StorageController::loadNotesWithoutMedia(const int start,
+                                         const int maxLoadCount) {
+  return loadNotes(&StorageController::loadSingleNoteWithoutMedia, start,
+                   maxLoadCount);
+}
+
+std::optional<StorageController::ZipDeleterPtr>
+StorageController::prepareReader(const QString &path) {
   void *reader = mz_zip_reader_create();
   if (!reader) {
     return std::nullopt;
   }
 
-  struct Cleanup {
-    void *r;
-    ~Cleanup() {
-      mz_zip_reader_close(r);
-      mz_zip_reader_delete(&r);
-    }
-  } cleanup{reader};
-
   if (mz_zip_reader_open_file(reader, path.toUtf8().constData()) != MZ_OK) {
     return std::nullopt;
   }
 
+  return std::make_unique<ZipDeleter>(reader);
+}
+
+QString StorageController::addMediaFromSystem(const QString &systemPath) {
+  return _storage->addMediaFromSystem(systemPath);
+}
+
+void StorageController::registerMediaForNote(
+    const QVector<QPair<QString, QByteArray>> &media) {
+  for (const auto &pair : media) {
+    _storage->addMedia(pair.first, pair.second);
+  }
+}
+
+std::optional<LoadedNote>
+StorageController::loadSingleNoteWithMedia(const QString &path) {
+  auto reader = prepareReader(path);
+
+  if (!reader) {
+    return std::nullopt;
+  }
+
   try {
-    Manifest m = loadAndParseManifest(reader);
-    Note *note = loadAndParseContent(reader, m);
-    auto media = extractMediaWithDataFromArchive(reader);
-    return LoadNoteResult{note, media};
+    Manifest m = loadAndParseManifest(reader->get()->r);
+    Note *note = loadAndParseContent(reader->get()->r, m);
+    auto media = extractMediaWithDataFromArchive(reader->get()->r);
+
+    registerMediaForNote(media);
+
+    return LoadedNote{path, note, LoadedNoteType::FullyLoaded};
   } catch (const std::exception &e) {
     // LOG exception
   } catch (...) {
@@ -192,13 +225,7 @@ void StorageController::saveNoteToPad(NoteSaveData data) {
     throw CouldNotSaveFile();
   }
 
-  struct Cleanup {
-    void *w;
-    ~Cleanup() {
-      mz_zip_writer_close(w);
-      mz_zip_writer_delete(&w);
-    }
-  } cleanup{writer};
+  ZipDeleter c{writer};
 
   if (mz_zip_writer_open_file(writer,
                               (_basicPath + data.path).toUtf8().constData(), 0,
@@ -238,16 +265,8 @@ void StorageController::saveNoteToPad(NoteSaveData data) {
   }
 }
 
-NoteSaveData
-StorageController::prepareNoteSaveData(Note *note,
-                                       QHash<QString, Note *> &notePathMap) {
-  QString path = notePathMap.key(note);
-
-  if (path.isEmpty()) {
-    path = makeNoteName() + ".pad";
-    notePathMap.insert(path, note);
-  }
-
+NoteSaveData StorageController::prepareNoteSaveData(Note *note,
+                                                    const QString &path) {
   Manifest m(note->createdAt());
   QJsonObject markup = buildJsonForNote(note);
   auto media = extractMediaFromNote(note);
@@ -281,13 +300,13 @@ StorageController::loadMediaWithDataFromStorage(const QStringList &mediaPaths) {
 }
 
 QCoro::Task<LoadNotesResult>
-StorageController::loadNotesAsync(const int start, const int maxLoadCount) {
+StorageController::loadFullNotesAsync(const int start, const int maxLoadCount) {
   co_return co_await QtConcurrent::run([this, start, maxLoadCount]() {
-    auto loadedNotes = loadNotes(start, maxLoadCount);
+    auto loadedNotes = loadFullNotes(start, maxLoadCount);
 
     for (const auto &note : loadedNotes.notes) {
       if (qApp) {
-        note.loadedNote->moveToThread(qApp->thread());
+        note.note->moveToThread(qApp->thread());
       }
     }
 
@@ -297,6 +316,34 @@ StorageController::loadNotesAsync(const int start, const int maxLoadCount) {
 
 QCoro::Task<void> StorageController::saveNoteAsync(NoteSaveData data) {
   co_await QtConcurrent::run([this, data]() { return saveNoteToPad(data); });
+}
+
+std::optional<LoadedNote>
+StorageController::loadSingleNoteWithoutMedia(const QString &path) {
+  auto reader = prepareReader(path);
+
+  if (!reader) {
+    return std::nullopt;
+  }
+
+  try {
+    Manifest m = loadAndParseManifest(reader->get()->r);
+    Note *note = loadAndParseContent(reader->get()->r, m);
+    return LoadedNote{path, note, LoadedNoteType::OnlyText};
+
+  } catch (const std::exception &) {
+    // TODO: log error
+  } catch (...) {
+    // TODO: log error
+  }
+
+  return std::nullopt;
+}
+
+void StorageController::loadMediaFor(const QString &path) {
+  auto reader = prepareReader(path);
+  auto media = extractMediaWithDataFromArchive(reader->get()->r);
+  registerMediaForNote(media);
 }
 
 } // namespace pad
