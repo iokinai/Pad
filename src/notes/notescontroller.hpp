@@ -10,7 +10,6 @@
 
 namespace pad {
 
-// REFACTOR: move to cache
 class NotesController : public QObject {
   Q_OBJECT
 

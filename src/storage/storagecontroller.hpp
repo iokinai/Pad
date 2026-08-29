@@ -11,8 +11,6 @@
 
 namespace pad {
 
-// REFACTOR: move async I/O operations here with QCoro
-
 struct LoadNotesResult {
   QVector<LoadedNote> notes;
   size_t totalCount;
