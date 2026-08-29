@@ -56,7 +56,7 @@ class StorageController : public QObject {
   std::optional<ZipDeleterPtr> prepareReader(const QString &path);
   void registerMediaForNote(const QVector<QPair<QString, QByteArray>> &media);
 
-  LoadNotesResult loadNotes(
+  LoadNotesResult *loadNotes(
       std::optional<LoadedNote> (StorageController::*loadSingleNoteDelegate)(
           const QString &path),
       const int start = 0, const int maxLoadCount = INT32_MAX);
@@ -64,8 +64,8 @@ class StorageController : public QObject {
 public:
   explicit StorageController(MediaStorage *storage, QObject *parent = nullptr);
 
-  LoadNotesResult loadFullNotes(const int start = 0,
-                                const int maxLoadCount = INT32_MAX);
+  LoadNotesResult *loadFullNotes(const int start = 0,
+                                 const int maxLoadCount = INT32_MAX);
 
   void saveNoteToPad(NoteSaveData data);
 
@@ -74,10 +74,10 @@ public:
   std::optional<LoadedNote> loadSingleNoteWithoutMedia(const QString &path);
   std::optional<LoadedNote> loadSingleNoteWithMedia(const QString &path);
 
-  LoadNotesResult loadNotesWithoutMedia(const int start = 0,
-                                        const int maxLoadCount = INT32_MAX);
+  LoadNotesResult *loadNotesWithoutMedia(const int start = 0,
+                                         const int maxLoadCount = INT32_MAX);
 
-  QCoro::Task<LoadNotesResult>
+  QCoro::Task<LoadNotesResult *>
   loadFullNotesAsync(const int start = 0, const int maxLoadCount = INT32_MAX);
 
   QString addMediaFromSystem(const QString &systemPath);

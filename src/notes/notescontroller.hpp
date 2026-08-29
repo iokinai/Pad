@@ -61,8 +61,9 @@ signals:
 private slots:
   void onNoteAdded();
   void onNoteEdited();
-  void onFullNoteLoaded(QVector<Note *> notes);
+  void onFullNotesLoaded(QVector<Note *> notes);
   void onTotalCountChanged();
+  void onNoteCreated(Note *note);
 };
 
 } // namespace pad

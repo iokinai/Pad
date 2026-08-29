@@ -30,7 +30,7 @@ public:
 
   QString makeNoteName() const noexcept;
 
-  Note *addEmptyNote();
+  void createEmptyNote();
 
   QCoro::Task<void> saveNoteAsync(Note *note);
 
@@ -38,7 +38,8 @@ public:
 
 signals:
   void anyNoteLoaded();
-  void fullNoteLoaded(QVector<Note *> notes);
+  void fullNotesLoaded(QVector<Note *> notes);
+  void noteCreated(Note *note);
   void totalCountChanged();
   void loaded();
 };

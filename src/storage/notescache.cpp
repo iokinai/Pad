@@ -33,9 +33,9 @@ QVector<Note *> NotesCache::fullyLoadedNotes() const {
 size_t NotesCache::totalCount() const { return _totalCount; }
 
 QCoro::Task<void> NotesCache::loadNotesAsync() {
-  LoadNotesResult result = co_await QtConcurrent::run([this]() {
+  LoadNotesResult *result = co_await QtConcurrent::run([this]() {
     auto result = _storageController->loadNotesWithoutMedia();
-    for (const auto &loadedNote : result.notes) {
+    for (const auto &loadedNote : result->notes) {
       if (qApp) {
         loadedNote.note->moveToThread(qApp->thread());
       }
@@ -44,32 +44,18 @@ QCoro::Task<void> NotesCache::loadNotesAsync() {
     return result;
   });
 
-  qDebug() << "before:" << result.notes.isDetached();
+  _totalCount = result->totalCount;
+  emit totalCountChanged();
 
-  auto it = result.notes.begin();
+  for (const auto &note : result->notes) {
+    note.note->setParent(this);
+    _notes.push_back(note);
+  }
 
-  qDebug() << "after:" << result.notes.isDetached();
+  delete result;
 
-  // qDebug() << result.totalCount;
-  // qDebug() << result.notes.size();
-
-  // qDebug() << "got notes";
-
-  // for (const LoadedNote &note : std::as_const(result.notes)) {
-  //   qDebug() << note.path;
-  // }
-
-  //_totalCount = result.totalCount;
-  // emit totalCountChanged();
-
-  // result.notes.detach();
-  // for (const auto &note : result.notes) {
-  // note.note->setParent(this);
-  //_notes.push_back(note);
-  //}
-
-  // emit anyNoteLoaded();
-  // emit loaded();
+  emit anyNoteLoaded();
+  emit loaded();
 }
 
 QCoro::Task<void> NotesCache::requestFullyLoadedNotesAsync(int since,
@@ -101,22 +87,23 @@ QCoro::Task<void> NotesCache::requestFullyLoadedNotesAsync(int since,
     }
   }
 
-  emit fullNoteLoaded(loadedNotes);
+  emit fullNotesLoaded(loadedNotes);
 }
 
 QString NotesCache::makeNoteName() const noexcept {
   return "Pad-Note-" +
-         QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
+         QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch()) +
+         ".pad";
 }
 
-Note *NotesCache::addEmptyNote() {
+void NotesCache::createEmptyNote() {
   auto note = new Note("", {}, QDateTime::currentDateTime(), this);
   auto name = makeNoteName();
 
   _notes.push_back({name, note, LoadedNoteType::FullyLoaded});
+  ++_totalCount;
   emit totalCountChanged();
-  emit fullNoteLoaded({note});
-  return note;
+  emit noteCreated(note);
 }
 
 QCoro::Task<void> NotesCache::saveNoteAsync(Note *note) {

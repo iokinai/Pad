@@ -18,10 +18,12 @@
 
 namespace pad {
 
-void NotesController::addEmptyNote() {
-  auto note = _cache->addEmptyNote();
+void NotesController::addEmptyNote() { _cache->createEmptyNote(); }
+
+void NotesController::onNoteCreated(Note *note) {
   _unsavedNotes.insert(note);
   note->setHasUnsavedChanges(true);
+  prepareAndPushCreatedNote(note, true);
 }
 
 void NotesController::onNoteEdited() {
@@ -48,19 +50,21 @@ NotesController::NotesController(NotesCache *cache, QObject *parent)
       _loaded(0) {
   connect(&_notesModel, &NotesModel::noteAdded, this,
           &NotesController::onNoteAdded);
-  connect(_cache, &NotesCache::fullNoteLoaded, this,
-          &NotesController::onFullNoteLoaded);
+  connect(_cache, &NotesCache::fullNotesLoaded, this,
+          &NotesController::onFullNotesLoaded);
+  connect(_cache, &NotesCache::noteCreated, this,
+          &NotesController::onNoteCreated);
   connect(_cache, &NotesCache::totalCountChanged, this,
           &NotesController::onTotalCountChanged);
   connect(_cache, &NotesCache::loaded, this, [this]() {
-    _cache->requestFullyLoadedNotesAsync(_loaded, LOAD_PACKET_LENGTH)
-        .then([]() { qDebug() << "result got"; });
+    _cache->requestFullyLoadedNotesAsync(_loaded, LOAD_PACKET_LENGTH);
   });
 
-  _cache->loadNotesAsync().then([]() { qDebug() << "requested"; });
+  QMetaObject::invokeMethod(
+      this, [this]() { _cache->loadNotesAsync(); }, Qt::QueuedConnection);
 }
 
-void NotesController::onFullNoteLoaded(QVector<Note *> notes) {
+void NotesController::onFullNotesLoaded(QVector<Note *> notes) {
   for (auto *note : notes) {
     prepareAndPushCreatedNote(note);
   }

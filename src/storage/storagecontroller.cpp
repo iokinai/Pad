@@ -50,12 +50,15 @@ static QByteArray readZipEntryToBuffer(void *reader) {
   return buffer;
 }
 
-LoadNotesResult StorageController::loadNotes(
+LoadNotesResult *StorageController::loadNotes(
     std::optional<LoadedNote> (StorageController::*loadSingleNoteDelegate)(
         const QString &path),
     const int start, const int maxLoadCount) {
   QDir dir(_basicPath, {"*.pad"}, QDir::Name | QDir::Reversed);
-  LoadNotesResult loadResult;
+
+  // We use heap because moving underlying QVector between threads
+  // in QCoro damage it
+  LoadNotesResult *loadResult = new LoadNotesResult;
 
   if (!dir.exists()) {
     dir.mkpath(_basicPath);
@@ -63,13 +66,13 @@ LoadNotesResult StorageController::loadNotes(
   }
 
   QStringList files = dir.entryList(QDir::Files);
-  loadResult.totalCount = files.size();
+  loadResult->totalCount = files.size();
 
   if (start >= files.size()) {
     return loadResult;
   }
 
-  loadResult.notes.reserve(maxLoadCount);
+  loadResult->notes.reserve(maxLoadCount);
 
   for (size_t i = start; i < qMin(start + maxLoadCount, files.size()); ++i) {
     auto apath = dir.absoluteFilePath(files[i]);
@@ -80,19 +83,19 @@ LoadNotesResult StorageController::loadNotes(
 
     result->path = files[i];
 
-    loadResult.notes.emplaceBack(std::move(*result));
+    loadResult->notes.emplaceBack(std::move(*result));
   }
 
   return loadResult;
 }
 
-LoadNotesResult StorageController::loadFullNotes(const int start,
-                                                 const int maxLoadCount) {
+LoadNotesResult *StorageController::loadFullNotes(const int start,
+                                                  const int maxLoadCount) {
   return loadNotes(&StorageController::loadSingleNoteWithMedia, start,
                    maxLoadCount);
 }
 
-LoadNotesResult
+LoadNotesResult *
 StorageController::loadNotesWithoutMedia(const int start,
                                          const int maxLoadCount) {
   return loadNotes(&StorageController::loadSingleNoteWithoutMedia, start,
@@ -103,10 +106,12 @@ std::optional<StorageController::ZipDeleterPtr>
 StorageController::prepareReader(const QString &path) {
   void *reader = mz_zip_reader_create();
   if (!reader) {
+    qDebug() << "could not create reader";
     return std::nullopt;
   }
 
   if (mz_zip_reader_open_file(reader, path.toUtf8().constData()) != MZ_OK) {
+    qDebug() << "could not open file";
     return std::nullopt;
   }
 
@@ -299,12 +304,12 @@ StorageController::loadMediaWithDataFromStorage(const QStringList &mediaPaths) {
   return media;
 }
 
-QCoro::Task<LoadNotesResult>
+QCoro::Task<LoadNotesResult *>
 StorageController::loadFullNotesAsync(const int start, const int maxLoadCount) {
   co_return co_await QtConcurrent::run([this, start, maxLoadCount]() {
     auto loadedNotes = loadFullNotes(start, maxLoadCount);
 
-    for (const auto &note : loadedNotes.notes) {
+    for (const auto &note : loadedNotes->notes) {
       if (qApp) {
         note.note->moveToThread(qApp->thread());
       }
@@ -341,7 +346,15 @@ StorageController::loadSingleNoteWithoutMedia(const QString &path) {
 }
 
 void StorageController::loadMediaFor(const QString &path) {
-  auto reader = prepareReader(path);
+  QString absPath = _basicPath + path;
+  auto reader = prepareReader(absPath);
+
+  if (!reader) {
+    qDebug() << "could not create reader or open file to load media: "
+             << absPath;
+    return;
+  }
+
   auto media = extractMediaWithDataFromArchive(reader->get()->r);
   registerMediaForNote(media);
 }
