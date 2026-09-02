@@ -35,6 +35,7 @@ size_t NotesCache::totalCount() const { return _totalCount; }
 QCoro::Task<void> NotesCache::loadNotesAsync() {
   LoadNotesResult *result = co_await QtConcurrent::run([this]() {
     auto result = _storageController->loadNotesWithoutMedia();
+
     for (const auto &loadedNote : result->notes) {
       if (qApp) {
         loadedNote.note->moveToThread(qApp->thread());

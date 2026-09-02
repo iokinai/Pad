@@ -77,5 +77,23 @@ Rectangle {
             icon.height: 14
             text: qsTr("Settings", "Sidebar settings button")
         }
+
+        SidebarButton {
+            Layout.topMargin: 10
+            Layout.bottomMargin: 10
+            Layout.leftMargin: 8
+            Layout.rightMargin: 8
+            Layout.fillWidth: true
+            Layout.preferredHeight: 36
+            active: true
+            onClicked: {
+                root.mainWindow.searchController.search("код")
+            }
+
+            icon.source: "qrc:/assets/img/settings.svg"
+            icon.width: 14
+            icon.height: 14
+            text: qsTr("Search", "Search sidebar button")
+        }
     }
 }

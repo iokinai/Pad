@@ -336,10 +336,10 @@ StorageController::loadSingleNoteWithoutMedia(const QString &path) {
     Note *note = loadAndParseContent(reader->get()->r, m);
     return LoadedNote{path, note, LoadedNoteType::OnlyText};
 
-  } catch (const std::exception &) {
-    // TODO: log error
+  } catch (const std::exception &e) {
+    qDebug() << "error while loading notes without media: " << e.what();
   } catch (...) {
-    // TODO: log error
+    qDebug() << "unknown error while loading notes without media";
   }
 
   return std::nullopt;

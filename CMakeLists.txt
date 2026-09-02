@@ -62,6 +62,12 @@ qt_add_executable(${PROJECT}
   src/storage/notescache.cpp
   src/padimageprovider.hpp
   src/padimageprovider.cpp
+  src/search/matcher.hpp
+  src/search/matcher.cpp
+  src/search/dameraulevenshteinmatcher.hpp
+  src/search/dameraulevenshteinmatcher.cpp
+  src/search/searchcontroller.hpp
+  src/search/searchcontroller.cpp
   src/utils.hpp
   src/utils.cpp
   assets.qrc
