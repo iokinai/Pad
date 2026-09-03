@@ -167,20 +167,69 @@ target_include_directories(${PROJECT} PRIVATE
 qt_finalize_target(${PROJECT})
 
 install(TARGETS ${PROJECT}
-  RUNTIME DESTINATION bin
-  BUNDLE DESTINATION .
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
 )
 
-install(
-  DIRECTORY
-    "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/"
-  DESTINATION "bin"
-  FILES_MATCHING
-    PATTERN "*.dll"
-    PATTERN "Qt*.dll" EXCLUDE
-)
+if (WIN32)
+  install(
+        DIRECTORY
+            "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/"
+        DESTINATION "bin"
+        FILES_MATCHING
+            PATTERN "*.dll"
+            PATTERN "Qt*.dll" EXCLUDE
+    )
+
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    install(
+            DIRECTORY
+                "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/bin/"
+            DESTINATION "bin"
+            FILES_MATCHING
+                PATTERN "*.dll"
+                PATTERN "Qt*.dll" EXCLUDE
+        )
+  endif()
+
+  qt_generate_deploy_qml_app_script(
+        TARGET ${PROJECT}
+        OUTPUT_SCRIPT deploy_script
+    )
+
+  install(SCRIPT ${deploy_script})
+
+elseif (UNIX)
+
+  install(
+        DIRECTORY
+            "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/"
+        DESTINATION "lib"
+        FILES_MATCHING
+            PATTERN "*.so"
+            PATTERN "*.so.*"
+    )
+
+  install(
+        DIRECTORY
+            "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/Qt6/"
+        DESTINATION "bin"
+    )
+
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    install(
+            DIRECTORY
+                "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib/"
+            DESTINATION "lib"
+            FILES_MATCHING
+                PATTERN "*.so"
+                PATTERN "*.so.*"
+        )
+  endif()
+
+endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   install(
@@ -193,5 +242,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 )
 endif()
 
-qt_generate_deploy_qml_app_script(TARGET ${PROJECT} OUTPUT_SCRIPT deploy_script)
-install(SCRIPT ${deploy_script})
+if (WIN32)
+  qt_generate_deploy_qml_app_script(TARGET ${PROJECT} OUTPUT_SCRIPT deploy_script)
+  install(SCRIPT ${deploy_script})
+endif()

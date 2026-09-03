@@ -6,9 +6,9 @@
 #include <algorithm>
 #include <ranges>
 
+#include <QCoro/QCoroFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
-#include <qcoro/QCoroFuture>
 
 using namespace std::chrono_literals;
 

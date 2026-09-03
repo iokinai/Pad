@@ -1,30 +1,39 @@
 {
-  "name": "pad",
-  "dependencies": [
-    "minizip-ng",
-    {
-      "name": "qtbase",
-      "default-features": false,
-      "features": ["concurrent", "gui"],
-      "platform": "!windows"
-    },
-    {
-      "name": "qtbase",
-      "default-features": false,
-      "features": ["concurrent", "gui", "windeployqt", "jpeg"],
-      "platform": "windows"
-    },
-    "qtdeclarative",
-    {
-      "name": "qttools",
-      "default-features": false,
-      "features": ["linguist"]
-    },
-    {
-      "name": "qcoro",
-      "default-features": false,
-      "features": ["qml", "quick"]
-    },
-    "qtimageformats"
-  ]
+    "name": "pad",
+    "dependencies": [
+        "minizip-ng",
+        {
+            "name": "qtbase",
+            "default-features": false,
+            "features": [
+                "concurrent",
+                "gui",
+                "jpeg",
+                "xcb",
+                "wayland",
+                "thread",
+                "xkbcommon-x11",
+                "xlib"
+            ],
+            "platform": "!windows"
+        },
+        {
+            "name": "qtbase",
+            "default-features": false,
+            "features": ["concurrent", "gui", "windeployqt", "jpeg"],
+            "platform": "windows"
+        },
+        "qtdeclarative",
+        {
+            "name": "qttools",
+            "default-features": false,
+            "features": ["linguist"]
+        },
+        {
+            "name": "qcoro",
+            "default-features": false,
+            "features": ["qml", "quick"]
+        },
+        "qtimageformats"
+    ]
 }
