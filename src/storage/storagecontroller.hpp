@@ -1,21 +1,18 @@
 #pragma once
 
+#include <QCoro/QCoroTask>
 #include <QJsonObject>
 #include <QStandardPaths>
 #include <QString>
+#include <memory>
 #include <pages/editor/note.hpp>
+#include <storage/loadednote.hpp>
 #include <storage/manifest.hpp>
 
 namespace pad {
 
-struct LoadNoteResult {
-  Note *loadedNote;
-  QVector<QPair<QString, QByteArray>> medias;
-  QString name;
-};
-
 struct LoadNotesResult {
-  QVector<LoadNoteResult> notes;
+  QVector<LoadedNote> notes;
   size_t totalCount;
 };
 
@@ -29,13 +26,18 @@ struct NoteSaveData {
 class StorageController : public QObject {
   Q_OBJECT
 
+  struct ZipDeleter {
+    void *r;
+    ~ZipDeleter();
+  };
+
+  using ZipDeleterPtr = std::unique_ptr<ZipDeleter>;
+
   MediaStorage *_storage;
 
   QString _basicPath =
       QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
       "/Pad/";
-
-  std::optional<LoadNoteResult> loadSingleNote(const QString &path);
 
   QVector<QPair<QString, QByteArray>>
   extractMediaWithDataFromArchive(void *reader);
@@ -49,18 +51,38 @@ class StorageController : public QObject {
   QVector<QPair<QString, QByteArray>>
   loadMediaWithDataFromStorage(const QStringList &mediaPaths);
 
-  QString makeNoteName() const noexcept;
+  std::optional<ZipDeleterPtr> prepareReader(const QString &path);
+  void registerMediaForNote(const QVector<QPair<QString, QByteArray>> &media);
+
+  LoadNotesResult *loadNotes(
+      std::optional<LoadedNote> (StorageController::*loadSingleNoteDelegate)(
+          const QString &path),
+      const int start = 0, const int maxLoadCount = INT32_MAX);
 
 public:
   explicit StorageController(MediaStorage *storage, QObject *parent = nullptr);
 
-  LoadNotesResult loadNotes(const int start = 0,
-                            const int maxLoadCount = INT32_MAX);
+  LoadNotesResult *loadFullNotes(const int start = 0,
+                                 const int maxLoadCount = INT32_MAX);
 
   void saveNoteToPad(NoteSaveData data);
 
-  NoteSaveData prepareNoteSaveData(Note *note,
-                                   QHash<QString, Note *> &notePathMap);
+  NoteSaveData prepareNoteSaveData(Note *note, const QString &path);
+
+  std::optional<LoadedNote> loadSingleNoteWithoutMedia(const QString &path);
+  std::optional<LoadedNote> loadSingleNoteWithMedia(const QString &path);
+
+  LoadNotesResult *loadNotesWithoutMedia(const int start = 0,
+                                         const int maxLoadCount = INT32_MAX);
+
+  QCoro::Task<LoadNotesResult *>
+  loadFullNotesAsync(const int start = 0, const int maxLoadCount = INT32_MAX);
+
+  QString addMediaFromSystem(const QString &systemPath);
+
+  void loadMediaFor(const QString &path);
+
+  QCoro::Task<void> saveNoteAsync(NoteSaveData data);
 };
 
 } // namespace pad

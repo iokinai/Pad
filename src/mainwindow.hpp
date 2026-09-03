@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QScreen>
 #include <pages/editor/editorcontroller.hpp>
+#include <search/searchcontroller.hpp>
 
 namespace pad {
 
@@ -27,7 +28,7 @@ public:
 
   Q_ENUM(CurrentPage)
 
-  MainWindow(QScreen *screen, QObject *parent = nullptr);
+  MainWindow(QScreen *screen, NotesCache *cache, QObject *parent = nullptr);
   EditorController *editor();
   CurrentPage currentPage();
   void setCurrentPage(CurrentPage page);

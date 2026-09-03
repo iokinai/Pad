@@ -11,9 +11,9 @@ void Note::connectNode(Node *node) {
 }
 
 Note::Note(const QString &title, QVector<Node *> &&nodes, QDateTime createdAt,
-           MediaStorage *storage, QObject *parent)
+           QObject *parent)
     : QAbstractListModel(parent), _title(title), _nodes(std::move(nodes)),
-      _createdAt(createdAt), _storage(storage) {
+      _createdAt(createdAt) {
   for (auto *node : _nodes) {
     node->setParent(this);
     connectNode(node);
@@ -83,14 +83,7 @@ void Note::insertText(Node *node, const QString &text, bool above) {
 }
 
 void Note::insertImage(Node *node, const QString &path, bool above) {
-  QString imageName = _storage->addMediaFromSystem(path);
-
-  if (imageName.isEmpty()) {
-    emit addImageError(path);
-    return;
-  }
-
-  insertAnyNode(node, new ImageNode(imageName, this), above);
+  insertAnyNode(node, new ImageNode(path, this), above);
 }
 
 void Note::insertCode(Node *node, const QString &code, bool above) {

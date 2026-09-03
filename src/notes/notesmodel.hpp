@@ -10,7 +10,9 @@ namespace pad {
 class NotesModel : public QAbstractListModel {
   Q_OBJECT
 
-  QVector<Note *> _notes;
+  QVector<Note *> _loadedNotes;
+  QVector<Note *> _layer2;
+  QVector<Note *> *_current;
 
 public:
   enum Roles { NoteRole = Qt::UserRole + 1 };
@@ -26,9 +28,11 @@ public:
 
   QHash<int, QByteArray> roleNames() const override;
 
+  void swapTo(std::optional<QVector<Note *>> set);
+
 public:
-  void pushNoteFront(Note *note);
-  void pushNoteBack(Note *note);
+  void pushLoadedNoteNoteFront(Note *note);
+  void pushLoadedNoteBack(Note *note);
   // void pushNotes(QVector<Note *> &&notes);
 
 signals:

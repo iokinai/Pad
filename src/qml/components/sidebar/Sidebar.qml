@@ -16,6 +16,7 @@ Rectangle {
     border.color: superApp.theme.border
 
     property var selectedPage: root.mainWindow.currentPage
+    property bool shouldShowSeachBar: false
 
     ColumnLayout {
         anchors.fill: parent
@@ -28,6 +29,11 @@ Rectangle {
             Layout.leftMargin: 16
             Layout.rightMargin: 16
             Layout.bottomMargin: 12
+        }
+
+        SearchBar {
+            visible: root.shouldShowSeachBar
+            notesController: root.notesController
         }
 
         Rectangle {
@@ -58,24 +64,44 @@ Rectangle {
             Layout.fillHeight: true
         }
 
-        SidebarButton {
+        ColumnLayout {
+            spacing: 2
             Layout.topMargin: 10
             Layout.bottomMargin: 10
-            Layout.leftMargin: 8
-            Layout.rightMargin: 8
-            Layout.fillWidth: true
-            Layout.preferredHeight: 36
-            active: root.selectedPage === CxxMainWindow.Settings
-            onClicked: {
-                root.selectedPage = CxxMainWindow.Settings
-                root.mainWindow.currentPage = CxxMainWindow.Settings
-                notesList.currentIndex = -1
+
+            SidebarButton {
+                Layout.leftMargin: 8
+                Layout.rightMargin: 8
+                Layout.fillWidth: true
+                Layout.preferredHeight: 36
+                active: root.shouldShowSeachBar
+                onClicked: {
+                    root.shouldShowSeachBar = !root.shouldShowSeachBar
+                }
+
+                icon.source: "qrc:/assets/img/search.svg"
+                icon.width: 14
+                icon.height: 14
+                text: qsTr("Search", "Search sidebar button")
             }
 
-            icon.source: "qrc:/assets/img/settings.svg"
-            icon.width: 14
-            icon.height: 14
-            text: qsTr("Settings", "Sidebar settings button")
+            SidebarButton {
+                Layout.leftMargin: 8
+                Layout.rightMargin: 8
+                Layout.fillWidth: true
+                Layout.preferredHeight: 36
+                active: root.selectedPage === CxxMainWindow.Settings
+                onClicked: {
+                    root.selectedPage = CxxMainWindow.Settings
+                    root.mainWindow.currentPage = CxxMainWindow.Settings
+                    notesList.currentIndex = -1
+                }
+
+                icon.source: "qrc:/assets/img/settings.svg"
+                icon.width: 14
+                icon.height: 14
+                text: qsTr("Settings", "Sidebar settings button")
+            }
         }
     }
 }

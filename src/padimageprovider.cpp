@@ -8,7 +8,6 @@ PadImageProvider::PadImageProvider(MediaStorage *storage)
 QImage PadImageProvider::requestImage(const QString &id, QSize *size,
                                       const QSize &requestedSize) {
   QByteArray image = _storage->getMedia(id);
-
   if (image.size() == 0) {
     return QImage();
   }

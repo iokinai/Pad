@@ -53,7 +53,7 @@ ColumnLayout {
         Layout.preferredHeight: 30
         notesController: root.notesController
         onClicked: {
-            root.notesController.loadNotesAsync()
+            root.notesController.qmlLoadNotesAsync()
         }
     }
 }

@@ -117,8 +117,9 @@ CodeNode *buildCodeNodeFromJson(const QJsonObject &nodeObject, Note *parent) {
   return new CodeNode(nodeCode, parent);
 }
 
+// REFACTOR: avoid unsafeSetNodes
 QVector<Node *> buildNodesFromJson(const QJsonArray &jsonNodes, Note *parent) {
-  QVector<Node *> preResult;
+  QVector<Node *> result;
 
   for (const auto &jsonNode : jsonNodes) {
     Node *node = nullptr;
@@ -143,21 +144,19 @@ QVector<Node *> buildNodesFromJson(const QJsonArray &jsonNodes, Note *parent) {
       throw InvalidJsonNodeType(nodeType);
     }
 
-    preResult.insert(nodeIndex, node);
+    result.insert(nodeIndex, node);
   }
 
-  return preResult;
+  return result;
 }
 
-Note *buildNoteFromJson(const QJsonObject &json, const Manifest &manifest,
-                        MediaStorage *storage) {
+Note *buildNoteFromJson(const QJsonObject &json, const Manifest &manifest) {
   auto jsonTitle = json["title"];
   validateObjectType(jsonTitle, ValidationType::String);
   auto jsonNodes = json["nodes"];
   validateObjectType(jsonNodes, ValidationType::Array);
 
-  Note *note =
-      new Note(jsonTitle.toString(), {}, manifest.createdAt(), storage);
+  Note *note = new Note(jsonTitle.toString(), {}, manifest.createdAt());
   note->unsafeSetNodes(buildNodesFromJson(jsonNodes.toArray(), note));
   return note;
 }

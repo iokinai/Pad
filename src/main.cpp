@@ -8,7 +8,11 @@
 #include <mainwindow.hpp>
 #include <padimageprovider.hpp>
 #include <pages/editor/node.hpp>
+#include <search/dameraulevenshteinmatcher.hpp>
+#include <search/matcher.hpp>
+#include <search/searchcontroller.hpp>
 #include <storage/mediastorage.hpp>
+#include <storage/notescache.hpp>
 #include <storage/storagecontroller.hpp>
 #include <superapp.hpp>
 #include <theme/darktheme.hpp>
@@ -30,7 +34,6 @@ void loadFonts() {
 
 int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
-
   QTranslator translator;
   QLocale locale = QLocale::system();
   QVector<pad::Language *> languages = loadLanguages();
@@ -41,10 +44,13 @@ int main(int argc, char *argv[]) {
       std::move(languages), &translator, &engine, &locale);
 
   pad::Theme::ThemeTag defaultTheme = pad::Theme::Dark;
-  pad::MainWindow mainWindow{QGuiApplication::primaryScreen()};
   pad::MediaStorage mediaStorage{};
   pad::StorageController storageController{&mediaStorage};
-  pad::NotesController notesController{&mediaStorage, &storageController};
+  pad::NotesCache notesCache{&storageController};
+  pad::Matcher *matcher = new pad::DamerauLevenshteinMatcher;
+  pad::SearchController searchController{matcher, &notesCache};
+  pad::MainWindow mainWindow{QGuiApplication::primaryScreen(), &notesCache};
+  pad::NotesController notesController{&notesCache, &searchController};
   pad::PadImageProvider *imageProvider =
       new pad::PadImageProvider{&mediaStorage};
 
@@ -70,6 +76,7 @@ int main(int argc, char *argv[]) {
 
   auto code = app.exec();
 
+  delete matcher;
   delete languageController;
 
   return code;

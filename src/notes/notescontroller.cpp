@@ -1,3 +1,4 @@
+#include <QCoro/QCoroQml>
 #include <QDateTime>
 #include <QDir>
 #include <QFuture>
@@ -11,17 +12,19 @@
 #include <pages/editor/codenode.hpp>
 #include <pages/editor/imagenode.hpp>
 #include <pages/editor/textnode.hpp>
+#include <search/searchcontroller.hpp>
 #include <storage/markup.hpp>
+#include <storage/notescache.hpp>
 #include <utils.hpp>
 
 namespace pad {
 
-void NotesController::addEmptyNote() {
-  auto note =
-      new Note("", {}, QDateTime::currentDateTime(), _storage, &_notesModel);
-  ++_totalCount;
+void NotesController::addEmptyNote() { _cache->createEmptyNote(); }
+
+void NotesController::onNoteCreated(Note *note) {
+  _unsavedNotes.insert(note);
+  note->setHasUnsavedChanges(true);
   prepareAndPushCreatedNote(note, true);
-  saveNoteAsync(note);
 }
 
 void NotesController::onNoteEdited() {
@@ -37,21 +40,68 @@ void NotesController::prepareAndPushCreatedNote(Note *note, bool front) {
   connect(note, &Note::noteEdited, this, &NotesController::onNoteEdited);
 
   if (front) {
-    _notesModel.pushNoteFront(note);
+    _notesModel.pushLoadedNoteNoteFront(note);
   } else {
-    _notesModel.pushNoteBack(note);
+    _notesModel.pushLoadedNoteBack(note);
   }
 }
 
-NotesController::NotesController(MediaStorage *storage,
-                                 StorageController *storageController,
+NotesController::NotesController(NotesCache *cache,
+                                 SearchController *searchController,
                                  QObject *parent)
-    : QObject(parent), _storageController(storageController), _notesModel({}),
-      _totalCount(0), _loaded(0), _storage(storage) {
+    : QObject(parent), _cache(cache), _searchController(searchController),
+      _notesModel({}), _totalCount(0), _loaded(0) {
   connect(&_notesModel, &NotesModel::noteAdded, this,
           &NotesController::onNoteAdded);
+  connect(_cache, &NotesCache::fullNotesLoaded, this,
+          &NotesController::onFullNotesLoaded);
+  connect(_cache, &NotesCache::noteCreated, this,
+          &NotesController::onNoteCreated);
+  connect(_cache, &NotesCache::totalCountChanged, this,
+          &NotesController::onTotalCountChanged);
+  connect(_cache, &NotesCache::loaded, this, [this]() {
+    _cache->requestFullyLoadedNotesAsync(_loaded, LOAD_PACKET_LENGTH);
+  });
+  connect(_searchController, &SearchController::searchEnded, this,
+          &NotesController::onSearchEnded);
 
-  loadNotesAsync();
+  connect(this, &NotesController::searchQueryChanged, this,
+          &NotesController::onSearchQueryChanged);
+
+  QMetaObject::invokeMethod(
+      this, [this]() { _cache->loadNotesAsync(); }, Qt::QueuedConnection);
+}
+
+void NotesController::onSearchEnded(QVector<LoadedNote> notes) {
+  QVector<Note *> foundNotes;
+  foundNotes.reserve(notes.size());
+
+  for (const auto &loaded : notes) {
+    foundNotes.push_back(loaded.note);
+  }
+
+  _notesModel.swapTo(std::move(foundNotes));
+}
+
+void NotesController::onSearchQueryChanged() {
+  if (_searchQuery.isEmpty()) {
+    _notesModel.swapTo(std::nullopt);
+  } else {
+    QMetaObject::invokeMethod(
+        this, [this]() { _searchController->search(_searchQuery); },
+        Qt::QueuedConnection);
+  }
+}
+
+void NotesController::onFullNotesLoaded(QVector<Note *> notes) {
+  for (auto *note : notes) {
+    prepareAndPushCreatedNote(note);
+  }
+}
+
+void NotesController::onTotalCountChanged() {
+  _totalCount = _cache->totalCount();
+  emit notesCountChanged();
 }
 
 size_t NotesController::notesCount() const { return _totalCount; }
@@ -64,43 +114,33 @@ void NotesController::onNoteAdded() {
   emit loadedNotesCountChanged();
 }
 
-void NotesController::loadNotesAsync() {
-  auto watcher = new QFutureWatcher<LoadNotesResult>();
-
+QCoro::Task<void> NotesController::loadNotesAsync() {
   setLoadingNotes(true);
 
-  connect(watcher, &QFutureWatcher<LoadNotesResult>::finished, this,
-          [watcher, this]() {
-            auto results = watcher->result();
-            _totalCount = results.totalCount;
+  co_await _cache->requestFullyLoadedNotesAsync(_loaded, LOAD_PACKET_LENGTH);
 
-            for (const auto &result : results.notes) {
-              result.loadedNote->setParent(&_notesModel);
-              _notePathMap[result.name] = result.loadedNote;
-
-              for (const auto &media : result.medias) {
-                _storage->addMedia(media.first, media.second);
-              }
-
-              prepareAndPushCreatedNote(result.loadedNote);
-            }
-
-            setLoadingNotes(false);
-            watcher->deleteLater();
-          });
-
-  watcher->setFuture(QtConcurrent::run([this]() {
-    auto results = _storageController->loadNotes(_loaded, LOAD_PACKET_LENGTH);
-
-    for (const auto &result : results.notes) {
-      if (qApp) {
-        result.loadedNote->moveToThread(qApp->thread());
-      }
-    }
-
-    return results;
-  }));
+  setLoadingNotes(false);
 }
+
+QCoro::Task<void> NotesController::saveNoteAsync(Note *note) {
+
+  note->setHasUnsavedChanges(false);
+  _unsavedNotes.remove(note);
+
+  try {
+    co_await _cache->saveNoteAsync(note);
+  } catch (...) {
+    note->setHasUnsavedChanges(true);
+    _unsavedNotes.insert(note);
+    emit couldNotSaveNote();
+  }
+}
+
+QCoro::QmlTask NotesController::qmlSaveNoteAsync(Note *note) {
+  return saveNoteAsync(note);
+}
+
+QCoro::QmlTask NotesController::qmlLoadNotesAsync() { return loadNotesAsync(); }
 
 bool NotesController::loadingNotes() const noexcept { return _loadingNotes; }
 
@@ -115,34 +155,27 @@ void NotesController::setLoadingNotes(bool v) noexcept {
 
 size_t NotesController::loadedNotesCount() const noexcept { return _loaded; }
 
-void NotesController::saveNoteAsync(Note *note) {
-  auto saveData = _storageController->prepareNoteSaveData(note, _notePathMap);
-  note->setHasUnsavedChanges(false);
-  _unsavedNotes.remove(note);
+QString NotesController::loadImageFromSystem(const QString &systemPath) {
+  auto name = _cache->addMediaFromSystem(systemPath);
 
-  auto *watcher = new QFutureWatcher<bool>();
+  if (name.isEmpty()) {
+    emit addImageError(systemPath);
+  }
 
-  connect(watcher, &QFutureWatcher<bool>::finished, this,
-          [watcher, note, this]() {
-            auto result = watcher->result();
+  return name;
+}
 
-            if (!result) {
-              note->setHasUnsavedChanges(true);
-              _unsavedNotes.insert(note);
-              emit couldNotSaveNote();
-            }
+const QString &NotesController::searchQuery() const noexcept {
+  return _searchQuery;
+}
 
-            watcher->deleteLater();
-          });
+void NotesController::setSearchQuery(const QString &newQuery) {
+  if (newQuery == _searchQuery) {
+    return;
+  }
 
-  watcher->setFuture(QtConcurrent::run([this, saveData]() {
-    try {
-      _storageController->saveNoteToPad(saveData);
-      return true;
-    } catch (...) {
-      return false;
-    }
-  }));
+  _searchQuery = newQuery;
+  emit searchQueryChanged();
 }
 
 } // namespace pad

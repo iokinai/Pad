@@ -27,6 +27,7 @@ Rectangle {
             note: root.note
             node: null
             above: false
+            notesController: root.notesController
         }
 
         Text {
@@ -87,7 +88,7 @@ Rectangle {
             palette.buttonText: superApp.theme.accentButtonText
 
             onClicked: {
-                root.notesController.saveNoteAsync(root.note)
+                root.notesController.qmlSaveNoteAsync(root.note)
             }
         }
 

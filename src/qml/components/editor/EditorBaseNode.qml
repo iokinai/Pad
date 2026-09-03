@@ -5,6 +5,8 @@ Item {
     id: root
     required property var note
     required property var currentNode
+    required property var notesController
+
     default property alias content: container.data
     width: parent.width
     height: column.height
@@ -18,6 +20,7 @@ Item {
         above: true
         currentNode: root.currentNode
         hovered: hoverHandler.hovered
+        notesController: root.notesController
     }
 
     EditorInsert {
@@ -25,6 +28,7 @@ Item {
         above: false
         currentNode: root.currentNode
         hovered: hoverHandler.hovered
+        notesController: root.notesController
     }
 
     Column {
