@@ -79,7 +79,7 @@ Rectangle {
                     root.shouldShowSeachBar = !root.shouldShowSeachBar
                 }
 
-                icon.source: "qrc:/assets/img/settings.svg"
+                icon.source: "qrc:/assets/img/search.svg"
                 icon.width: 14
                 icon.height: 14
                 text: qsTr("Search", "Search sidebar button")

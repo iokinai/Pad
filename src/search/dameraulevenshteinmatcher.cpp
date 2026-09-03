@@ -47,6 +47,10 @@ int DamerauLevenshteinMatcher::maxTolerance(const QStringView &word) const {
   }
 }
 
+static bool qCharEqualCaseInsensitive(QChar a, QChar b) {
+  return a.toLower() == b.toLower();
+}
+
 int DamerauLevenshteinMatcher::calcCell(const QVector<int> &currentRow,
                                         const QVector<int> &prevRow,
                                         QVector<int> &twoBefore, qsizetype i,
@@ -54,10 +58,11 @@ int DamerauLevenshteinMatcher::calcCell(const QVector<int> &currentRow,
                                         const QStringView &s2) {
   int remove = prevRow[j] + 1;
   int add = currentRow[j - 1] + 1;
-  int cost = (s1[j - 1] == s2[i - 1]) ? 0 : 1;
+  int cost = (qCharEqualCaseInsensitive(s1[j - 1], s2[i - 1])) ? 0 : 1;
   int change = prevRow[j - 1] + cost;
 
-  if (i > 1 && j > 1 && s1[j - 1] == s2[i - 2] && s1[j - 2] == s2[i - 1]) {
+  if (i > 1 && j > 1 && qCharEqualCaseInsensitive(s1[j - 1], s2[i - 2]) &&
+      qCharEqualCaseInsensitive(s1[j - 2], s2[i - 1])) {
     int swap = twoBefore[j - 2] + 1;
     return std::min({remove, add, change, swap});
   }
