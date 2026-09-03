@@ -72,7 +72,9 @@ LoadNotesResult *StorageController::loadNotes(
     return loadResult;
   }
 
-  loadResult->notes.reserve(maxLoadCount);
+  if (maxLoadCount != INT32_MAX) {
+    loadResult->notes.reserve(maxLoadCount);
+  }
 
   for (size_t i = start; i < qMin(start + maxLoadCount, files.size()); ++i) {
     auto apath = dir.absoluteFilePath(files[i]);

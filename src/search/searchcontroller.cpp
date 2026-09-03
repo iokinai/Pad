@@ -1,9 +1,10 @@
+#include <QCoro/QCoroFuture>
 #include <QThread>
 #include <QtConcurrent/QtConcurrent>
 #include <algorithm>
 #include <pages/editor/codenode.hpp>
 #include <pages/editor/textnode.hpp>
-#include <qnamespace.h>
+#include <search/currentsearch.hpp>
 #include <search/matcher.hpp>
 #include <search/searchcontroller.hpp>
 #include <storage/notescache.hpp>
@@ -14,21 +15,23 @@ QVector<QStringView>
 SearchController::splitStringToStringView(const QString &text) {
   QVector<QStringView> result;
 
+  QStringView textView = text;
+
   qsizetype start = 0;
 
-  while (start < text.size()) {
-    while (start < text.size() && text[start].isSpace())
+  while (start < textView.size()) {
+    while (start < textView.size() && textView[start].isSpace())
       ++start;
 
-    if (start >= text.size())
+    if (start >= textView.size())
       break;
 
     qsizetype end = start;
 
-    while (end < text.size() && !text[end].isSpace())
+    while (end < textView.size() && !textView[end].isSpace())
       ++end;
 
-    result.emplace_back(text.sliced(start, end - start));
+    result.emplace_back(textView.sliced(start, end - start));
 
     start = end;
   }
@@ -36,18 +39,14 @@ SearchController::splitStringToStringView(const QString &text) {
   return result;
 }
 
-SearchController::SearchController(Matcher *matcher, NotesCache *cache,
-                                   QObject *parent)
-    : QObject(parent), _matcher(matcher), _cache(cache) {}
-
-void SearchController::search(const QString &prompt) {
-  QVector<QStringView> words = splitStringToStringView(prompt);
-
-  const qsizetype notesCount = _cache->allNotes().count();
-  const qsizetype threadCount = QThread::idealThreadCount();
-
-  const qsizetype chunkSize =
-      std::ceil(static_cast<double>(notesCount) / threadCount);
+// we use std::vector because QVector triggers copy constructor
+// which is deleted on QCoro::Task
+std::vector<QCoro::Task<QVector<LoadedNote>>>
+SearchController::runWorkers(qsizetype threadCount, qsizetype chunkSize,
+                             qsizetype notesCount, const QString &prompt,
+                             std::shared_ptr<CurrentSearch> currentSearch) {
+  std::vector<QCoro::Task<QVector<LoadedNote>>> workers;
+  workers.reserve(threadCount);
 
   for (qsizetype i = 0; i < threadCount; ++i) {
     QVector<LoadedNote> notes;
@@ -59,12 +58,50 @@ void SearchController::search(const QString &prompt) {
       notes.emplace_back(_cache->allNotes()[j]);
 
     if (!notes.isEmpty())
-      runSearchThread(std::move(notes), words);
+      workers.push_back(
+          std::move(runSearchThread(std::move(notes), prompt, currentSearch)));
   }
+
+  return workers;
+}
+
+SearchController::SearchController(Matcher *matcher, NotesCache *cache,
+                                   QObject *parent)
+    : QObject(parent), _matcher(matcher), _cache(cache) {}
+
+QCoro::Task<void> SearchController::search(const QString &prompt) {
+  const qsizetype threadCount = QThread::idealThreadCount();
+
+  if (_currentSearch) {
+    _currentSearch->cancelled = true;
+  }
+
+  _currentSearch = std::make_shared<CurrentSearch>(false);
+  auto currentSearch = _currentSearch;
+
+  const qsizetype notesCount = _cache->allNotes().count();
+
+  const qsizetype chunkSize =
+      std::ceil(static_cast<double>(notesCount) / threadCount);
+
+  auto workers =
+      runWorkers(threadCount, chunkSize, notesCount, prompt, currentSearch);
+
+  QVector<LoadedNote> result;
+
+  for (const auto &worker : workers) {
+    result << co_await worker;
+  }
+
+  if (currentSearch->cancelled) {
+    co_return;
+  }
+
+  emit searchEnded(result);
 }
 
 bool SearchController::searchInText(const QString &text,
-                                    const QStringView &queryWord) {
+                                    QStringView queryWord) {
   QVector<QStringView> wordsInSection = splitStringToStringView(text);
 
   for (const auto &candidate : wordsInSection) {
@@ -84,7 +121,7 @@ bool SearchController::searchInText(const QString &text,
   return false;
 }
 
-bool SearchController::searchInNote(const Note *note, const QStringView &word) {
+bool SearchController::searchInNote(const Note *note, QStringView word) {
   if (note->title().contains(word, Qt::CaseInsensitive)) {
     return true;
   }
@@ -113,12 +150,18 @@ bool SearchController::searchInNote(const Note *note, const QStringView &word) {
   return false;
 }
 
-void SearchController::runSearchThread(QVector<LoadedNote> notes,
-                                       QVector<QStringView> words) {
-  auto a = QtConcurrent::run([notes, words, this]() {
+QCoro::Task<QVector<LoadedNote>> SearchController::runSearchThread(
+    QVector<LoadedNote> notes, QString prompt,
+    std::shared_ptr<CurrentSearch> currentSearch) {
+  co_return co_await QtConcurrent::run([notes, prompt, this, currentSearch]() {
+    QVector<QStringView> words = splitStringToStringView(prompt);
     QVector<LoadedNote> found;
 
     for (const auto &note : notes) {
+      if (!currentSearch || currentSearch->cancelled) {
+        return found;
+      }
+
       for (const auto &word : words) {
         if (searchInNote(note.note, word)) {
           found.push_back(note);
@@ -127,13 +170,7 @@ void SearchController::runSearchThread(QVector<LoadedNote> notes,
       }
     }
 
-    // DEBUG ONLY
-
-    for (const auto &f : found) {
-      qDebug() << "found note: " << f.note->title();
-    }
-
-    // emit or smthng
+    return found;
   });
 }
 

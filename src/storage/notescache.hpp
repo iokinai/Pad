@@ -36,6 +36,8 @@ public:
 
   QCoro::Task<void> requestFullyLoadedNotesAsync(int since, int count);
 
+  QCoro::Task<bool> loadMediaForNoteIfRequired(Note *note);
+
 signals:
   void anyNoteLoaded();
   void fullNotesLoaded(QVector<Note *> notes);

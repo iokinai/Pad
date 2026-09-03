@@ -6,9 +6,8 @@
 
 namespace pad {
 
-MainWindow::MainWindow(QScreen *screen, SearchController *searchController,
-                       QObject *parent)
-    : QObject(parent), _editor(nullptr), _searchController(searchController) {
+MainWindow::MainWindow(QScreen *screen, NotesCache *cache, QObject *parent)
+    : QObject(parent), _editor(nullptr, cache) {
   int w, h;
 
   if (screen == nullptr) {

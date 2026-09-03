@@ -12,6 +12,7 @@
 #include <pages/editor/codenode.hpp>
 #include <pages/editor/imagenode.hpp>
 #include <pages/editor/textnode.hpp>
+#include <search/searchcontroller.hpp>
 #include <storage/markup.hpp>
 #include <storage/notescache.hpp>
 #include <utils.hpp>
@@ -39,15 +40,17 @@ void NotesController::prepareAndPushCreatedNote(Note *note, bool front) {
   connect(note, &Note::noteEdited, this, &NotesController::onNoteEdited);
 
   if (front) {
-    _notesModel.pushNoteFront(note);
+    _notesModel.pushLoadedNoteNoteFront(note);
   } else {
-    _notesModel.pushNoteBack(note);
+    _notesModel.pushLoadedNoteBack(note);
   }
 }
 
-NotesController::NotesController(NotesCache *cache, QObject *parent)
-    : QObject(parent), _cache(cache), _notesModel({}), _totalCount(0),
-      _loaded(0) {
+NotesController::NotesController(NotesCache *cache,
+                                 SearchController *searchController,
+                                 QObject *parent)
+    : QObject(parent), _cache(cache), _searchController(searchController),
+      _notesModel({}), _totalCount(0), _loaded(0) {
   connect(&_notesModel, &NotesModel::noteAdded, this,
           &NotesController::onNoteAdded);
   connect(_cache, &NotesCache::fullNotesLoaded, this,
@@ -59,9 +62,35 @@ NotesController::NotesController(NotesCache *cache, QObject *parent)
   connect(_cache, &NotesCache::loaded, this, [this]() {
     _cache->requestFullyLoadedNotesAsync(_loaded, LOAD_PACKET_LENGTH);
   });
+  connect(_searchController, &SearchController::searchEnded, this,
+          &NotesController::onSearchEnded);
+
+  connect(this, &NotesController::searchQueryChanged, this,
+          &NotesController::onSearchQueryChanged);
 
   QMetaObject::invokeMethod(
       this, [this]() { _cache->loadNotesAsync(); }, Qt::QueuedConnection);
+}
+
+void NotesController::onSearchEnded(QVector<LoadedNote> notes) {
+  QVector<Note *> foundNotes;
+  foundNotes.reserve(notes.size());
+
+  for (const auto &loaded : notes) {
+    foundNotes.push_back(loaded.note);
+  }
+
+  _notesModel.swapTo(std::move(foundNotes));
+}
+
+void NotesController::onSearchQueryChanged() {
+  if (_searchQuery.isEmpty()) {
+    _notesModel.swapTo(std::nullopt);
+  } else {
+    QMetaObject::invokeMethod(
+        this, [this]() { _searchController->search(_searchQuery); },
+        Qt::QueuedConnection);
+  }
 }
 
 void NotesController::onFullNotesLoaded(QVector<Note *> notes) {
@@ -134,6 +163,19 @@ QString NotesController::loadImageFromSystem(const QString &systemPath) {
   }
 
   return name;
+}
+
+const QString &NotesController::searchQuery() const noexcept {
+  return _searchQuery;
+}
+
+void NotesController::setSearchQuery(const QString &newQuery) {
+  if (newQuery == _searchQuery) {
+    return;
+  }
+
+  _searchQuery = newQuery;
+  emit searchQueryChanged();
 }
 
 } // namespace pad

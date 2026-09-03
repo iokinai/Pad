@@ -1,3 +1,4 @@
+#include <exception>
 #include <exceptions/savingunknownnote.hpp>
 #include <storage/loadednote.hpp>
 #include <storage/notescache.hpp>
@@ -126,6 +127,35 @@ QCoro::Task<void> NotesCache::saveNoteAsync(Note *note) {
 
 QString NotesCache::addMediaFromSystem(const QString &systemPath) {
   return _storageController->addMediaFromSystem(systemPath);
+}
+
+QCoro::Task<bool> NotesCache::loadMediaForNoteIfRequired(Note *note) {
+  auto it =
+      std::find_if(_notes.cbegin(), _notes.cend(),
+                   [note](const LoadedNote &ln) { return ln.note == note; });
+
+  if (it == _notes.end() || it->type == LoadedNoteType::FullyLoaded) {
+    co_return false;
+  }
+
+  const QString path = it->path;
+
+  try {
+    co_await QtConcurrent::run(
+        [this, path]() { _storageController->loadMediaFor(path); });
+  } catch (const std::exception &e) {
+    qDebug() << "error while loading media for note:" << e.what();
+    co_return false;
+  }
+
+  auto loaded =
+      std::find_if(_notes.begin(), _notes.end(),
+                   [note](const LoadedNote &ln) { return ln.note == note; });
+
+  if (loaded != _notes.end())
+    loaded->type = LoadedNoteType::FullyLoaded;
+
+  co_return true;
 }
 
 } // namespace pad

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QObject>
+#include <memory>
+#include <search/currentsearch.hpp>
 #include <search/matcher.hpp>
 #include <storage/notescache.hpp>
 
@@ -13,17 +15,28 @@ class SearchController : public QObject {
 
   Matcher *_matcher;
   NotesCache *_cache;
+  std::shared_ptr<CurrentSearch> _currentSearch = nullptr;
 
   QVector<QStringView> splitStringToStringView(const QString &text);
-  void runSearchThread(QVector<LoadedNote> notes, QVector<QStringView> words);
-  bool searchInText(const QString &text, const QStringView &word);
-  bool searchInNote(const Note *note, const QStringView &word);
+
+  QCoro::Task<QVector<LoadedNote>>
+  runSearchThread(QVector<LoadedNote> notes, QString prompt,
+                  std::shared_ptr<CurrentSearch> currentSearch);
+  bool searchInText(const QString &text, QStringView word);
+  bool searchInNote(const Note *note, QStringView word);
+  std::vector<QCoro::Task<QVector<LoadedNote>>>
+  runWorkers(qsizetype threadCount, qsizetype chunkSize, qsizetype notesCount,
+             const QString &prompt,
+             std::shared_ptr<CurrentSearch> currentSearch);
 
 public:
   SearchController(Matcher *matcher, NotesCache *cache,
                    QObject *parent = nullptr);
 
-  Q_INVOKABLE void search(const QString &prompt);
+  QCoro::Task<void> search(const QString &prompt);
+
+signals:
+  void searchEnded(QVector<LoadedNote> notes);
 };
 
 } // namespace pad

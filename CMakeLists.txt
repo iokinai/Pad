@@ -68,6 +68,7 @@ qt_add_executable(${PROJECT}
   src/search/dameraulevenshteinmatcher.cpp
   src/search/searchcontroller.hpp
   src/search/searchcontroller.cpp
+  src/search/currentsearch.hpp
   src/utils.hpp
   src/utils.cpp
   assets.qrc
@@ -106,6 +107,7 @@ qt_add_qml_module(${PROJECT}
     src/qml/components/sidebar/NoteListItem.qml
     src/qml/components/sidebar/SidebarButton.qml
     src/qml/components/sidebar/LoadMoreButton.qml
+    src/qml/components/sidebar/SearchBar.qml
     src/qml/components/settings/SettingsHeader.qml
     src/qml/components/settings/AppearanceSection.qml
     src/qml/components/settings/LanguageSection.qml

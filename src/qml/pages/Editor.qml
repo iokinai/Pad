@@ -136,6 +136,7 @@ ColumnLayout {
                     notesController: baseNode.notesControllerValue
 
                     EditorImageNode {
+                        editor: root.editor
                         node: baseNode.nodeValue
                         width: parent.width
                     }

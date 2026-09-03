@@ -12,15 +12,12 @@ class MainWindow : public QObject {
 
   int _initialWidth, _initialHeight;
   EditorController _editor;
-  SearchController *_searchController;
 
   Q_PROPERTY(int initialWidth MEMBER _initialWidth CONSTANT)
   Q_PROPERTY(int initialHeight MEMBER _initialHeight CONSTANT)
   Q_PROPERTY(EditorController *editor READ editor CONSTANT)
   Q_PROPERTY(CurrentPage currentPage READ currentPage WRITE setCurrentPage
                  NOTIFY currentPageChanged)
-  Q_PROPERTY(
-      SearchController *searchController MEMBER _searchController CONSTANT)
 
 public:
   enum CurrentPage {
@@ -31,8 +28,7 @@ public:
 
   Q_ENUM(CurrentPage)
 
-  MainWindow(QScreen *screen, SearchController *searchController = nullptr,
-             QObject *parent = nullptr);
+  MainWindow(QScreen *screen, NotesCache *cache, QObject *parent = nullptr);
   EditorController *editor();
   CurrentPage currentPage();
   void setCurrentPage(CurrentPage page);
