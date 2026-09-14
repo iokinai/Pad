@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import PadUi
 
 ApplicationWindow {
@@ -12,16 +13,81 @@ ApplicationWindow {
     width: root.mainWindow.initialWidth
     height: root.mainWindow.initialHeight
 
-    StackView {
-        id: stackView
-        anchors.fill: parent
-        initialItem: editorPage
+    MessageDialog {
+        id: errorDialog
+        buttons: MessageDialog.Ok
     }
 
-    Component {
-        id: editorPage
-        Editor {
+    Connections {
+        target: root.mainWindow
+        function onCurrentPageChanged() {
+            switch (root.mainWindow.currentPage) {
+                case CxxMainWindow.Empty:
+                    stackView.replace(emptyStatePage)
+                    break
+                case CxxMainWindow.Editor:
+                    stackView.replace(editorPage)
+                    break
+                case CxxMainWindow.Settings:
+                    stackView.replace(settingsPage)
+                    break
+            }
+        }
+    }
+
+    Connections {
+        target: superApp.notesController
+        function onCouldNotSaveNote() {
+            errorDialog.title = qsTr("Error saving note")
+            errorDialog.text = qsTr("Could not save note")
+            errorDialog.open()
+        }
+    }
+
+    RowLayout {
+        spacing: 0
+
+        anchors.fill: parent
+
+        Sidebar {
+            mainWindow: root.mainWindow
             editor: root.mainWindow.editor
+            width: 248
+            Layout.fillHeight: true
+        }
+
+        StackView {
+            id: stackView
+            initialItem: emptyStatePage
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+            pushEnter: Transition {}
+            pushExit: Transition {}
+            popEnter: Transition {}
+            popExit: Transition {}
+            replaceEnter: Transition {}
+            replaceExit: Transition {}
+        }
+
+        Component {
+            id: editorPage
+            Editor {
+                editor: root.mainWindow.editor
+            }
+        }
+
+        Component {
+            id: emptyStatePage
+            EmptyState {
+                notesController: superApp.notesController
+            }
+        }
+
+        Component {
+            id: settingsPage
+            Settings {
+            }
         }
     }
 }

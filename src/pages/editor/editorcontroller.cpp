@@ -1,23 +1,32 @@
+#include <QFuture>
+#include <QFutureWatcher>
+#include <pages/editor/codenode.hpp>
 #include <pages/editor/editorcontroller.hpp>
+#include <pages/editor/imagenode.hpp>
 #include <pages/editor/node.hpp>
 #include <pages/editor/note.hpp>
 #include <pages/editor/textnode.hpp>
+#include <storage/notescache.hpp>
 
 namespace pad {
 
-static QVector<Node *> getNodes() {
-  QVector<Node *> nodes;
+EditorController::EditorController(Note *currentNote, NotesCache *cache,
+                                   QObject *parent)
+    : QObject(parent), _currentNote(currentNote), _cache(cache) {}
 
-  nodes.push_back(new TextNode("123"));
-  nodes.push_back(new TextNode("456"));
+Note *EditorController::currentNote() { return _currentNote; }
 
-  return nodes;
+void EditorController::setCurrentNote(Note *note) {
+  auto task = _cache->loadMediaForNoteIfRequired(note);
+
+  QCoro::connect(std::move(task), this, [this](bool result) {
+    if (result) {
+      emit imageLoaded();
+    }
+  });
+
+  _currentNote = note;
+  emit currentNoteChanged();
 }
-
-EditorController::EditorController(QObject *parent)
-    : QObject(parent), _note(new Note("Untitled", std::move(getNodes()),
-                                      QDateTime::currentDateTime(), this)) {}
-
-QAbstractListModel *EditorController::note() const noexcept { return _note; }
 
 } // namespace pad

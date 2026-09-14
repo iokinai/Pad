@@ -4,5 +4,11 @@
         <file alias="image/image.svg">assets/img/image.svg</file>
         <file alias="image/code.svg">assets/img/code.svg</file>
         <file alias="fonts/DMSans.ttf">assets/fonts/DMSans.ttf</file>
+        <file alias="fonts/JetBrainsMono.ttf">assets/fonts/JetBrainsMono.ttf</file>
+        <file alias="fonts/JetBrainsMono-Medium.ttf">assets/fonts/JetBrainsMono-Medium.ttf</file>
+        <file alias="img/plus.svg">assets/img/plus.svg</file>
+        <file alias="img/doc.svg">assets/img/doc.svg</file>
+        <file alias="img/settings.svg">assets/img/settings.svg</file>
+        <file alias="img/search.svg">assets/img/search.svg</file>
     </qresource>
 </RCC>

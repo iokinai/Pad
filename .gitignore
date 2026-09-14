@@ -6,3 +6,6 @@ vcpkg_installed/
 .zed/
 build/
 CMakePresets.json
+out/
+dist/
+bin/

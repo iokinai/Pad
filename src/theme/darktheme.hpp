@@ -29,6 +29,9 @@ public:
   QString remove() const override;
   QString removeBorder() const override;
   QString removeText() const override;
+  QString monospaceFontFamily() const override;
+  QString accentButtonText() const override;
+  ThemeTag themeTag() const override;
 };
 
 } // namespace pad

@@ -2,31 +2,73 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QTranslator>
+#include <language/language.hpp>
+#include <language/languagecontroller.hpp>
 #include <mainwindow.hpp>
+#include <padimageprovider.hpp>
 #include <pages/editor/node.hpp>
+#include <search/dameraulevenshteinmatcher.hpp>
+#include <search/matcher.hpp>
+#include <search/searchcontroller.hpp>
+#include <storage/mediastorage.hpp>
+#include <storage/notescache.hpp>
+#include <storage/storagecontroller.hpp>
 #include <superapp.hpp>
 #include <theme/darktheme.hpp>
 
+constexpr const char *PAD_IMAGE_PROVIDER_PATH = "pad-images";
+
+QVector<pad::Language *> loadLanguages() {
+  return {
+      new pad::Language("Русский", ":/lang/ru_RU.qm"),
+      new pad::Language("English", ":/lang/en_US.qm"),
+  };
+}
+
 void loadFonts() {
   QFontDatabase::addApplicationFont(":/assets/fonts/DMSans.ttf");
+  QFontDatabase::addApplicationFont(":/assets/fonts/JetBrainsMono.ttf");
+  QFontDatabase::addApplicationFont(":/assets/fonts/JetBrainsMono-Medium.ttf");
 }
 
 int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
-
-  pad::Theme *defaultTheme = new pad::DarkTheme();
-  pad::MainWindow mainWindow{QGuiApplication::primaryScreen()};
-
-  pad::SuperApp superApp{defaultTheme, &mainWindow};
+  QTranslator translator;
+  QLocale locale = QLocale::system();
+  QVector<pad::Language *> languages = loadLanguages();
 
   QQmlApplicationEngine engine;
+
+  pad::LanguageController *languageController = pad::LanguageController::create(
+      std::move(languages), &translator, &engine, &locale);
+
+  pad::Theme::ThemeTag defaultTheme = pad::Theme::Dark;
+  pad::MediaStorage mediaStorage{};
+  pad::StorageController storageController{&mediaStorage};
+  pad::NotesCache notesCache{&storageController};
+  pad::Matcher *matcher = new pad::DamerauLevenshteinMatcher;
+  pad::SearchController searchController{matcher, &notesCache};
+  pad::MainWindow mainWindow{QGuiApplication::primaryScreen(), &notesCache};
+  pad::NotesController notesController{&notesCache, &searchController};
+  pad::PadImageProvider *imageProvider =
+      new pad::PadImageProvider{&mediaStorage};
+
+  pad::SuperApp superApp{defaultTheme, &mainWindow, &notesController,
+                         PAD_IMAGE_PROVIDER_PATH, languageController};
+
+  engine.addImageProvider(PAD_IMAGE_PROVIDER_PATH, imageProvider);
 
   qmlRegisterUncreatableType<pad::Node>("PadUi", 1, 0, "Node", "Used for Enum");
   qmlRegisterUncreatableType<pad::MainWindow>("PadUi", 1, 0, "CxxMainWindow",
                                               "Used for Enum");
-  engine.rootContext()->setContextProperty("superApp", &superApp);
+  qmlRegisterUncreatableType<pad::Theme>("PadUi", 1, 0, "Theme",
+                                         "Used for Enum");
 
+  engine.rootContext()->setContextProperty("superApp", &superApp);
   engine.loadFromModule("PadUi", "MainWindow");
+
+  languageController->setCurrentLanguage();
 
   QObject::connect(
       &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
@@ -34,7 +76,8 @@ int main(int argc, char *argv[]) {
 
   auto code = app.exec();
 
-  delete defaultTheme;
+  delete matcher;
+  delete languageController;
 
   return code;
 }

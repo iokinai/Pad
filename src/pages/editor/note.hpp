@@ -6,6 +6,7 @@
 #include <QString>
 #include <QVector>
 #include <pages/editor/node.hpp>
+#include <storage/mediastorage.hpp>
 
 namespace pad {
 
@@ -15,13 +16,20 @@ class Note : public QAbstractListModel {
   QString _title;
   QVector<Node *> _nodes;
   QDateTime _createdAt;
+  bool _hasUnsavedChanges = false;
 
   void connectNode(Node *node);
 
+  void insertAnyNode(Node *basic, Node *insert, bool above = true);
   void insertText(Node *node, const QString &text, bool above = true);
+  void insertImage(Node *node, const QString &path, bool above = true);
+  void insertCode(Node *node, const QString &code, bool above = true);
 
   Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
-  Q_PROPERTY(QDateTime createdAt MEMBER _createdAt CONSTANT)
+  Q_PROPERTY(QDateTime createdAt READ createdAt CONSTANT)
+  Q_PROPERTY(int nodesCount READ nodesCount NOTIFY nodesCountChanged)
+  Q_PROPERTY(bool hasUnsavedChanges READ hasUnsavedChanges WRITE
+                 setHasUnsavedChanges NOTIFY hasUnsavedChangesChanged)
 public:
   enum Roles { NodeRole = Qt::UserRole + 1 };
 
@@ -34,16 +42,29 @@ public:
 
   Q_INVOKABLE void insertTextAbove(Node *top, const QString &text = "");
   Q_INVOKABLE void insertTextBelow(Node *bottom, const QString &text = "");
+  Q_INVOKABLE void insertImageAbove(Node *top, const QString &path);
+  Q_INVOKABLE void insertImageBelow(Node *bottom, const QString &path);
+  Q_INVOKABLE void insertCodeAbove(Node *top, const QString &code = "");
+  Q_INVOKABLE void insertCodeBelow(Node *bottom, const QString &code = "");
 
   QString title() const;
   void setTitle(const QString &title);
+  int nodesCount() const;
+  const QVector<Node *> &nodes() const;
+  void unsafeSetNodes(QVector<Node *> &&nodes);
+  QDateTime createdAt() const;
+  bool hasUnsavedChanges() const;
+  void setHasUnsavedChanges(bool hasUnsavedChanges);
 
 signals:
   void titleChanged();
+  void nodesCountChanged();
+  void noteEdited();
+  void hasUnsavedChangesChanged();
 
 private slots:
   void onNodeRemoveRequested();
-  void onNoteEdited();
+  void onNodeEdited();
 };
 
 } // namespace pad

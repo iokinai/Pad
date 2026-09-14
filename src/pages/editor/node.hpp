@@ -11,6 +11,7 @@ public:
   enum NodeType {
     Text,
     Image,
+    Code,
   };
 
   Q_ENUM(NodeType)

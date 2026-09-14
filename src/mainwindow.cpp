@@ -1,10 +1,13 @@
 #include <mainwindow.hpp>
+#include <pages/editor/codenode.hpp>
 #include <pages/editor/editorcontroller.hpp>
+#include <pages/editor/imagenode.hpp>
+#include <pages/editor/textnode.hpp>
 
 namespace pad {
 
-MainWindow::MainWindow(QScreen *screen, QObject *parent)
-    : QObject(parent), _editor(this) {
+MainWindow::MainWindow(QScreen *screen, NotesCache *cache, QObject *parent)
+    : QObject(parent), _editor(nullptr, cache) {
   int w, h;
 
   if (screen == nullptr) {
@@ -20,5 +23,12 @@ MainWindow::MainWindow(QScreen *screen, QObject *parent)
 }
 
 EditorController *MainWindow::editor() { return &_editor; }
+
+MainWindow::CurrentPage MainWindow::currentPage() { return _currentPage; }
+
+void MainWindow::setCurrentPage(CurrentPage page) {
+  _currentPage = page;
+  emit currentPageChanged();
+}
 
 } // namespace pad
